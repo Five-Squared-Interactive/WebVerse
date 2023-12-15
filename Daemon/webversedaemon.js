@@ -1,0 +1,279 @@
+const fs = require('fs');
+const WebSocketServer = require('./websocketserver');
+const CertificateGenerator = require('./certificategenerator');
+const DaemonMessages = require('./daemonmessages');
+const FindFreePorts = require('find-free-ports');
+const { exit } = require('process');
+const OS = require('os');
+const { v4: uuidv4 } = require('uuid');
+const Logging = require('./logging');
+
+module.exports = function() {
+    var clients = {};
+    var clientMainApps = {};
+    var clientTabs = {};
+    var clientHeartbeatTimers = {};
+    var wsis = {};
+    var mainApps = [];
+    const clientTimeout = 30;
+
+    this.hostname = OS.hostname();
+    
+    this.pid = process.pid;
+
+    this.certInfo = CertificateGenerator.GenerateCertificateAndKey(this.hostname + '.webverse.info');
+    
+    this.port = null;
+    FindFreePorts().then((foundPort) => {
+        if (foundPort == null) {
+            Logging.Log("[WebVerse Daemon] Unable to find port.");
+            exit(1);
+        }
+        this.port = foundPort[0];
+
+        fs.writeFileSync(`webverse-daemon-pid.dat`, this.pid.toString());
+        fs.writeFileSync(`webverse-daemon-port.dat`, this.port.toString());
+        fs.writeFileSync(`webverse-daemon-connection-${this.port}.cert`, this.certInfo.certificate);
+
+        setInterval(function() { CheckHeartbeatTimers() }, 5000);
+
+        WebSocketServer.CreateWebSocketServer(this.port, this.certInfo, OnConnected, OnMessage);
+    });
+
+    function OnConnected(wsi) {
+        Logging.Log("[WebVerse Daemon] Client connected. Exchanging handshake.");
+
+        let connID = uuidv4();
+
+        wsi.send(JSON.stringify(DaemonMessages.IdentificationRequest(connID)));
+        wsis[connID] = wsi;
+    }
+
+    function OnMessage(data) {
+        if (data == null) {
+            Logging.Log("[WebVerse Daemon] Invalid data.");
+            return;
+        }
+        
+        let message = JSON.parse(data);
+        HandleMessage(message);
+    }
+
+    function HandleMessage(data) {
+        if (data.topic == null) {
+            Logging.Log("[WebVerse Daemon->HandleMessage] Invalid message.");
+            return;
+        }
+    
+        if (data.topic == "IDENTIFICATION-RESP") {
+            if (data.connectionID == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] Identification response missing parameter: connectionID.");
+                return;
+            }
+            if (data.clientType == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] Identification response missing parameter: clientType.");
+                return;
+            }
+            Logging.Log("[WebVerse Daemon->HandleMessage] Identification response message received. Adding client.");
+            AddClient(data.connectionID, data.windowID, data.tabID, data.clientType);
+        }
+        else if (data.topic == "HEARTBEAT") {
+            if (data.connectionID == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] Heartbeat message missing parameter: connectionID.");
+                return;
+            }
+            Logging.Log("[WebVerse Daemon->HandleMessage] Heartbeat message received.");
+            ProcessHeartbeat(data.connectionID);
+        }
+        else if (data.topic == "NEW-TAB-REQ") {
+            if (data.connectionID == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] New Tab request missing parameter: connectionID.");
+                return;
+            }
+            if (data.tabType == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] New Tab request missing parameter: tabType.");
+                return;
+            }
+            Logging.Log("[WebVerse Daemon->HandleMessage] New Tab request received.");
+            ProcessNewTabRequest(data.connectionID, data.tabType);
+        }
+        else if (data.topic == "FOCUSED-TAB-REQ") {
+            if (data.connectionID == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] Focused Tab request missing parameter: connectionID.");
+                return;
+            }
+
+            if (data.type == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] Focused Tab request missing parameter: type.");
+                return;
+            }
+
+            if (data.url == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] Focused Tab request missing parameter: url.");
+                return;
+            }
+            Logging.Log("[WebVerse Daemon->HandleMessage] Focused Tab request received.");
+            ProcessFocusedTabRequest(data.connectionID, data.type, data.url);
+        }
+        else if (data.topic == "LOAD-WORLD-REQ") {
+            if (data.connectionID == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] Load World request missing parameter: connectionID.");
+                return;
+            }
+            Logging.Log("[WebVerse Daemon->HandleMessage] Load World request received.");
+            ProcessLoadWorldRequest(data.connectionID, data.url);
+        }
+        else if (data.topic == "CLOSE-REQ") {
+            if (data.connectionID == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] Close request missing parameter: connectionID.");
+                return;
+            }
+            Logging.Log("[WebVerse Daemon->HandleMessage] Close request received.");
+            ProcessCloseRequest(data.connectionID);
+        }
+        else {
+            Logging.Log('[WebVerse Daemon->HandleMessage] Unhandled message type.');
+            return;
+        }
+    }
+
+    function AddClient(connectionID, windowID, tabID, clientType) {
+        if (clients.hasOwnProperty(connectionID)) {
+            Logging.Log('[WebVerse Daemon->AddClient] Client ' + connectionID + ' already exists.');
+            return;
+        }
+
+        clients[connectionID] = clientType;
+        clientTabs[connectionID] = tabID;
+        clientHeartbeatTimers[connectionID] = 0;
+        if (clientType == "WV-MAIN-APP") {
+            for (mainApp in mainApps) {
+                if (mainApp == connectionID) {
+                    Logging.Log("[WebVerse Daemon->AddClient] Attempting to add a main app, but it already exists.");
+                    return;
+                }
+            }
+            mainApps.push(connectionID);
+        }
+        else {
+            clientMainApps[connectionID] = windowID;
+        }
+    }
+
+    function RemoveClient(connectionID) {
+        if (!clients.hasOwnProperty(connectionID)) {
+            Logging.Log('[WebVerse Daemon->RemoveClient] Client ' + connectionID + ' does not exist.');
+            return;
+        }
+        
+        delete clients[connectionID];
+        delete clientHeartbeatTimers[connectionID];
+        delete clientMainApps[connectionID];
+    }
+
+    function ProcessHeartbeat(connectionID) {
+        if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
+            Logging.Log('[WebVerse Daemon->ProcessHeartbeat] Received heartbeat for unknown connection ID: ' + connectionID);
+            return;
+        }
+
+        clientHeartbeatTimers[connectionID] = 0;
+    }
+
+    function ProcessNewTabRequest(connectionID, type) {
+        if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
+            Logging.Log('[WebVerse Daemon->ProcessNewTabRequest] Received new tab request for unknown connection ID: ' + connectionID);
+            return;
+        }
+
+        if (clients[connectionID] == "WV-RUNTIME") {
+            for (mainApp in mainApps) {
+                if (mainApps[mainApp] == clientMainApps[connectionID]) {
+                    if (wsis[mainApps[mainApp]] == null) {
+                        Logging.Log('[WebVerse Daemon->ProcessNewTabRequest] No WS connection for main app.');
+                    }
+                    else {
+                        wsis[mainApps[mainApp]].send(JSON.stringify(DaemonMessages.NewTabCommand(mainApps[mainApp], type)));
+                    }
+                    return;
+                }
+            }
+            Logging.Log('[WebVerse Daemon->ProcessNewTabRequest] Could not find main app.');
+        }
+        else {
+            Logging.Log("[WebVerse Daemon->ProcessNewTabRequest] Client cannot request a new tab.");
+        }
+    }
+
+    function ProcessFocusedTabRequest(connectionID, type, url) {
+        if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
+            Logging.Log('[WebVerse Daemon->ProcessNewTabRequest] Received focused tab request for unknown connection ID: ' + connectionID);
+            return;
+        }
+
+        if (clients[connectionID] == "WV-RUNTIME") {
+            for (mainApp in mainApps) {
+                if (mainApps[mainApp] == clientMainApps[connectionID]) {
+                    if (wsis[mainApps[mainApp]] == null) {
+                        Logging.Log('[WebVerse Daemon->ProcessNewTabRequest] No WS connection for main app.');
+                    }
+                    else {
+                        wsis[mainApps[mainApp]].send(JSON.stringify(DaemonMessages.FocusedTabCommand(mainApps[mainApp], type, url)));
+                    }
+                    return;
+                }
+            }
+            Logging.Log('[WebVerse Daemon->ProcessFocusedTabRequest] Could not find main app.');
+        }
+        else {
+            Logging.Log("[WebVerse Daemon->ProcessFocusedTabRequest] Client cannot request a focused tab.");
+        }
+    }
+
+    function ProcessLoadWorldRequest(connectionID, url) {
+        if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
+            Logging.Log('[WebVerse Daemon->ProcessLoadWorldRequest] Received load world request for unknown connection ID: ' + connectionID);
+            return;
+        }
+    }
+
+    function ProcessCloseRequest(connectionID) {
+        if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
+            Logging.Log('[WebVerse Daemon->ProcessCloseRequest] Received close request for unknown connection ID: ' + connectionID);
+            return;
+        }
+
+        if (clients[connectionID] == "WV-RUNTIME") {
+            for (mainApp in mainApps) {
+                if (mainApps[mainApp] == clientMainApps[connectionID]) {
+                    if (wsis[mainApps[mainApp]] == null) {
+                        Logging.Log('[WebVerse Daemon->ProcessCloseRequest] No WS connection for main app.');
+                    }
+                    else {
+                        wsis[mainApps[mainApp]].send(JSON.stringify(DaemonMessages.CloseCommand(connectionID, mainApps[mainApp])));
+                    }
+                    return;
+                }
+            }
+            Logging.Log('[WebVerse Daemon->ProcessCloseRequest] Could not find main app.');
+        }
+        else {
+            Logging.Log("[WebVerse Daemon->ProcessCloseRequest] Client cannot request the application close.");
+        }
+    }
+
+    function CheckHeartbeatTimers() {
+        for (timer in clientHeartbeatTimers) {
+            if (clientHeartbeatTimers[timer] == null) {
+                
+            }
+            else {
+                clientHeartbeatTimers[timer] += 5;
+                if (clientHeartbeatTimers[timer] > clientTimeout) {
+                    Logging.Log("[WebVerse Daemon->CheckHeartbeatTimers] Client " + timer + " timed out.");
+                    RemoveClient(timer);
+                }
+            }
+        }
+    }
+}

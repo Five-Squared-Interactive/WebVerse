@@ -1,0 +1,243 @@
+html {
+    box-sizing: border-box;
+}
+html, body {
+    margin: 0;
+    background-color: #000000;
+}
+
+.urlback {
+  position: absolute;
+  float: left;
+  top: 4px;
+  left: 3px;
+  height: 24px;
+  width: 39px;
+  border-radius: 15px;
+  border: none;
+  background-color: #ffffff;
+  box-sizing: inherit;
+}
+.urlback:hover {
+  background-color: rgba(128, 128, 128, 128);
+}
+.urlback:active {
+  background-color: rgb(64, 64, 64);
+}
+  
+.urlforward {
+  position: absolute;
+  top: 4px;
+  left: 54px;
+  height: 24px;
+  width: 39px;
+  border-radius: 15px;
+  border: none;
+  background-color: #ffffff;
+  box-sizing: inherit;
+}
+.urlforward:hover {
+  background-color: rgba(128, 128, 128, 128);
+}
+.urlforward:active {
+  background-color: rgb(64, 64, 64);
+}
+
+.focusmenu {
+  position: absolute;
+  top: 4px;
+  right: calc(1vw + 51px);
+  height: 24px;
+  width: 39px;
+  border-radius: 15px;
+  border: none;
+  background-color: #ffffff;
+  box-sizing: inherit;
+}
+.focusmenu:hover {
+  background-color: rgba(128, 128, 128, 128);
+}
+.focusmenu:active {
+  background-color: rgb(64, 64, 64);
+}
+
+.urlmenu {
+  position: absolute;
+  top: 4px;
+  right: calc(1vw);
+  height: 24px;
+  width: 39px;
+  border-radius: 15px;
+  border: none;
+  background-color: #ffffff;
+  box-sizing: inherit;
+}
+.urlmenu:hover {
+    background-color: rgba(128, 128, 128, 128);
+}
+.urlmenu:active {
+  background-color: rgb(64, 64, 64);
+}
+
+.url {
+  position: relative;
+  height: 30px;
+  width: 100%;
+  background-color: black;
+  box-sizing: inherit;
+}
+
+.urlinput {
+  position: relative;
+  width: calc(99vw - 228px);
+  height: 95%;
+  font-size: 100%;
+  border-radius: 28px;
+  padding-left: 119px;
+  padding-right: 109px;
+  box-sizing: inherit;
+}
+.urlinput:hover {
+  background-color: rgba(128, 128, 128, 128);
+}
+.urlinput:active {
+  background-color: rgb(64, 64, 64);
+}
+.urlinput:focus {
+  outline: none;
+}
+
+#input:hover > .urlback {
+  background-color: rgba(128, 128, 128, 128);
+}
+
+.icon {
+  pointer-events: none;
+  box-sizing: inherit;
+}
+
+.contextmenu {
+  display: none;
+  position: relative;
+  margin-left: auto;
+  margin-right: 0;
+  background-color: rgba(0, 0, 0, 0);
+  border: #000000;
+  border-radius: 0px;
+  border-style: hidden;
+  width: 279px;
+}
+
+.contextmenu a {
+  display: block;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  background-color: rgba(127, 127, 127, 0.79);
+  backdrop-filter: blur(2px);
+  color: rgb(221, 221, 221);
+  text-decoration: none;
+  padding: 10px;
+  text-align: left;
+}
+.contextmenu a:hover {
+  background-color: rgb(169, 192, 193);
+  color: #000000;
+}
+.contextmenu hr {
+  border: 1px solid rgb(255, 255, 255);
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+#console {
+  position: absolute;
+  bottom: 0px;
+  height: 33%;
+  width: 100%;
+  background-color: #000000;
+  overflow-y: scroll;
+  display: none;
+  box-sizing: inherit;
+}
+
+#console-text {
+  color: white;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: small;
+}
+
+.title-heading {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: large;
+  text-align: center;
+  background-color: white;
+}
+
+#history {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#history td, #history th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#history tr:nth-child(even){
+  background-color: #f2f2f2;
+}
+
+#history tr:hover {
+  background-color: #ddd;
+}
+
+#history th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: center;
+  background-color: #7999ad;
+  color: white;
+}
+
+#history tr {
+  text-align: left;
+  background-color: white;
+}
+
+.h1-info {
+  background-color: white;
+}
+
+#runtime-container {
+  height: calc(100vh - 34px);
+  width: 100%;
+  border: 0;
+}
+
+#homepage-logo {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+  margin-top: 79px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.dark-background {
+  background-color: #000000;
+  pointer-events: none;
+  user-select: none;
+}
+
+.white-text {
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  font-size: xx-large;
+  pointer-events: none;
+  user-select: none;
+}

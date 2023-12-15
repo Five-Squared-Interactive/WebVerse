@@ -1,0 +1,21 @@
+{
+    "author": {
+        "name": "Five Squared Interactive"
+    },
+    "name": "webverse",
+    "description": "WebVerse Runtime Retriever",
+    "keywords": [
+        "WebVerse",
+        "Runtime",
+        "Web MetaVerse"
+    ],
+    "version": "1.0.0",
+    "license": "MIT",
+    "scripts": {
+        "start": "node runtimedownloader.js https://webverse-runtime.s3.amazonaws.com/builds/22Nov2023/Lightweight-v1.0.0rc1_22Nov2023_3cd0b88.zip Lightweight https://webverse-runtime.s3.amazonaws.com/builds/22Nov2023/Win64Desktop-v1.0.0rc1_22Nov2023_3cd0b88.zip Focused https://webverse-runtime.s3.amazonaws.com/builds/22Nov2023/Win64SteamVR-v1.0.0rc1_22Nov2023_3cd0b88.zip FocusedSteamVR"
+    },
+    "dependencies": {
+        "node-downloader-helper": "latest",
+        "decompress": "latest"
+    }
+}

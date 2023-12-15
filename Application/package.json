@@ -1,0 +1,49 @@
+{
+  "author": {
+    "name": "Five Squared Interactive"
+  },
+  "name": "webverse",
+  "description": "WebVerse Desktop Application",
+  "keywords": [
+    "WebVerse",
+    "Application",
+    "Web MetaVerse"
+  ],
+  "version": "1.0.0",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^26.1.0",
+    "electron-builder": "^24.6.4"
+  },
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.fivesqd.webverse",
+    "icon": "images/WebVerse.png",
+    "productName": "WebVerse",
+    "copyright": "Copyright © 2023 Five Squared Interactive",
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": true,
+      "displayLanguageSelector": true,
+      "shortcutName": "WebVerse",
+      "warningsAsErrors": true,
+      "runAfterFinish": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "installerSidebar": "todo",
+      "uninstallerSidebar": "todo"
+    }
+  },
+  "dependencies": {
+    "electron-tabs": "latest",
+    "ps-node": "latest",
+    "sqlite3": "latest",
+    "ws": "latest"
+  }
+}

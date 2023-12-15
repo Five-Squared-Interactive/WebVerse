@@ -1,0 +1,28 @@
+{
+    "author": {
+      "name": "Five Squared Interactive"
+    },
+    "name": "webverse-daemon",
+    "description": "WebVerse Daemon",
+    "keywords": [
+      "WebVerse",
+      "Daemon",
+      "Web MetaVerse"
+    ],
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "dependencies": {
+      "selfsigned": "latest",
+      "ws": "latest",
+      "find-free-ports": "latest",
+      "uuidv4": "latest"
+    },
+    "scripts": {
+      "start": "node index.js",
+      "build": "pkg -t node16-win -o build/webverse-daemon.exe .\\index.js"
+    },
+    "engines": {
+      "node": ">=6.0"
+    }
+  }

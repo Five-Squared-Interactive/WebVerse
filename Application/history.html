@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <title>History</title>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <link rel="shortcut icon" href="TemplateData/favicon.ico">
+        <link rel="stylesheet" href="TemplateData/style.css">
+    </head>
+    <body class="title-heading">
+        <h1 class="h1-info">History</h1>
+        <table id="history">
+            <tr>
+                <th>Date/Time</th>
+                <th>Site</th>
+            </tr>
+        </table>
+    </body>
+    <script>
+        function PopulateHistoryTable(hist) {
+            var table = document.getElementById("history");
+
+            hist.forEach(entry => {
+                var row = table.insertRow();
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                cell1.innerHTML = new Date(entry.timestamp * 1000).toLocaleString();
+                cell2.innerHTML = "<a href='" + entry.site + "'>" + entry.site + "</a>";
+            });
+        }
+
+        var hist = [
+            {
+                timestamp: 1696946044,
+                site: "https://dylanworld.world"
+            },
+            {
+                timestamp: 1696947044,
+                site: "https://dylanworld2.world"
+            }
+        ];
+
+        PopulateHistoryTable(hist);
+    </script>
+</html>
