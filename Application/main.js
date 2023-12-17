@@ -1,3 +1,5 @@
+// Copyright (c) 2019-2023 Five Squared Interactive. All rights reserved.
+
 const electron = require('electron');
 const path = require('path');
 const ApplicationSettings = require('./applicationsettings');
@@ -7,20 +9,36 @@ const DaemonRunner = require('./daemonrunner');
 const ipcMain = electron.ipcMain;
 const app = electron.app;
 
+/**
+ * Main window.
+ */
 let mainWindow = null;
-let applicationSettings = null;
 
+/**
+ * Application settings.
+ */
+let applicationSettings = null;
 applicationSettings = new ApplicationSettings("./webverse.config");
 if (applicationSettings.Initialize() == false) {
   console.log("Error reading WebVerse config.");
   app.quit();
 }
-    
+
+/**
+ * Initialize WebVerse History.
+ */
 wvHistory = new WVHistory(applicationSettings.settings['history-db'].path);
 wvHistory.InitializeDB();
+
+/**
+ * Initialize WebVerse Settings.
+ */
 wvSettings = new WVSettings(applicationSettings.settings['settings-db'].path);
 wvSettings.InitializeDB();
 
+/**
+ * Handle certificate error.
+ */
 app.on ("certificate-error", (event, webContents, url, error, cert, callback) => {
   if (url.startsWith("wss://127.0.0.1") || url.startsWith("wss://localhost")) {
       if (true) { // TODO: Verify certificate.
@@ -30,6 +48,9 @@ app.on ("certificate-error", (event, webContents, url, error, cert, callback) =>
   } else callback (false);
 });
 
+/**
+ * Handle application ready.
+ */
 app.on('ready', function () {
   const daemonRunner = new DaemonRunner(applicationSettings.settings.daemon['process-name'],
     applicationSettings.settings.daemon['daemon-executable']);
@@ -77,14 +98,23 @@ app.on('ready', function () {
   });
 });
 
+/**
+ * Handle IPC close message.
+ */
 ipcMain.on('close', () => {
   app.quit();
 });
 
+/**
+ * Handle IPC minimize message.
+ */
 ipcMain.on('minimize', () => {
   mainWindow.minimize();
 });
 
+/**
+ * Handle IPC toggle-maximize message.
+ */
 ipcMain.on('toggle-maximize', () => {
   if (mainWindow.isMaximized()) {
     mainWindow.unmaximize();
@@ -93,6 +123,9 @@ ipcMain.on('toggle-maximize', () => {
   }
 });
 
+/**
+ * @function StartBrowserWindow Start the browser window.
+ */
 function StartBrowserWindow() {
   console.log("Daemon started. Starting application.");
 
@@ -110,7 +143,7 @@ function StartBrowserWindow() {
       minWidth: 720,
       minHeight: 390
     });
-    mainWindow.loadURL('file://' + __dirname + '/electron-tabs.html');
+    mainWindow.loadURL('file://' + __dirname + '/tabholder.html');
     mainWindow.on('ready-to-show', function () {
       mainWindow.show();
       mainWindow.focus();

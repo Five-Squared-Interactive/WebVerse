@@ -1,7 +1,14 @@
+// Copyright (c) 2019-2023 Five Squared Interactive. All rights reserved.
+
 const { DownloaderHelper } = require('node-downloader-helper');
 const decompress = require("decompress");
 const fs = require("fs");
 
+/**
+ * @function DownloadFiles Download Runtime Riles.
+ * @param {*} runtimePaths Runtime Paths.
+ * @param {*} destinations Destination Paths.
+ */
 function DownloadFiles(runtimePaths, destinations) {
     const filePath = `${__dirname}`;
 

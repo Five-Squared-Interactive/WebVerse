@@ -1,9 +1,27 @@
+// Copyright (c) 2019-2023 Five Squared Interactive. All rights reserved.
+
 const { spawn } = require('child_process');
 
+/**
+ * @class Class that handles the focused runtime process.
+ * @param {*} desktopRuntimePath Path to the desktop runtime executable.
+ * @param {*} steamVRRuntimePath Path to the SteamVR runtime executable.
+ * @param {*} storageMode Mode to use for storage.
+ * @param {*} maxEntries Maximum storage entries to use.
+ * @param {*} maxEntryLength Maximum storage entry length to use.
+ * @param {*} maxKeyLength Maximum storage entry key length to use.
+ * @param {*} daemonPort Daemon port to use.
+ * @param {*} mainAppID Main application's ID.
+ */
 module.exports = function(desktopRuntimePath, steamVRRuntimePath, storageMode,
     maxEntries, maxEntryLength, maxKeyLength, daemonPort, mainAppID) {
     var runtime = null;
     
+    /**
+     * @method LoadWorldInRuntime Loads a given world in a focused runtime.
+     * @param {*} worldURI URI to the world.
+     * @param {*} mode Type of runtime to use.
+     */
     this.LoadWorldInRuntime = function(worldURI, mode) {
         CloseRuntime();
         if (mode == "desktop") {
@@ -26,10 +44,16 @@ module.exports = function(desktopRuntimePath, steamVRRuntimePath, storageMode,
         }
     }
 
+    /**
+     * @method CloseRuntime Close any runtimes.
+     */
     this.CloseRuntime = function() {
         CloseRuntime();
     }
 
+    /**
+     * @method CloseRuntime Close any runtimes.
+     */
     function CloseRuntime() {
         if (runtime != null) {
             runtime.kill();

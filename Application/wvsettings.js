@@ -1,13 +1,25 @@
+// Copyright (c) 2019-2023 Five Squared Interactive. All rights reserved.
+
 const sqlite3 = require('sqlite3');
 
 const DEFAULTMAXENTRIES = 65536;
 const DEFAULTMAXENTRYLENGTH = 16384;
 const DEFAULTMAXKEYLENGTH = 512;
 
+/**
+ * @class WVSettings
+ * @description Class for managing the WebVerse settings.
+ * @param {*} settingsDBPath Path to the settings database.
+ */
 module.exports = function(settingsDBPath) {
 
     this.db = new sqlite3.Database(settingsDBPath);
 
+    /**
+     * @method InitializeKey Initialize the value for a storage key.
+     * @param {*} key Storage key.
+     * @param {*} value Value.
+     */
     this.InitializeKey = function(key, value) {
         this.db.get("SELECT * FROM storage WHERE key = ?", [ key ], function(err, row) {
             if (err) {
@@ -23,6 +35,9 @@ module.exports = function(settingsDBPath) {
         });
     }
 
+    /**
+     * @method InitializeDB Initialize the database.
+     */
     this.InitializeDB = function() {
         console.log("Initializing Settings Database.");
         ref = this;
@@ -37,6 +52,11 @@ module.exports = function(settingsDBPath) {
         });
     }
 
+    /**
+     * @method GetStorageSetting Get a storage setting.
+     * @param {*} key Key for which to get a storage setting.
+     * @returns The storage setting, or null.
+     */
     this.GetStorageSetting = function(key) {
         this.db.get("SELECT * FROM storage WHERE key = ?", [ key ], function(err, row) {
             if (err) {
@@ -52,6 +72,11 @@ module.exports = function(settingsDBPath) {
         });
     }
 
+    /**
+     * @method ApplyStorageSetting Apply a storage setting.
+     * @param {*} key Key for which to apply a storage setting.
+     * @param {*} value Value to apply.
+     */
     this.ApplyStorageSetting = function(key, value) {
         this.db.run(`UPDATE storage
                 SET value = ?

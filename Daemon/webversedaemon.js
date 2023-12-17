@@ -1,3 +1,5 @@
+// Copyright (c) 2019-2023 Five Squared Interactive. All rights reserved.
+
 const fs = require('fs');
 const WebSocketServer = require('./websocketserver');
 const CertificateGenerator = require('./certificategenerator');
@@ -8,21 +10,63 @@ const OS = require('os');
 const { v4: uuidv4 } = require('uuid');
 const Logging = require('./logging');
 
+/**
+ * @module WebVerseDaemon WebVerse Daemon.
+ */
 module.exports = function() {
+    /**
+     * Clients.
+     */
     var clients = {};
+
+    /**
+     * Client Main Applications.
+     */
     var clientMainApps = {};
+
+    /**
+     * Client Tabs.
+     */
     var clientTabs = {};
+
+    /**
+     * Client Heartbeat Timers.
+     */
     var clientHeartbeatTimers = {};
+
+    /**
+     * WebSocket Interfaces.
+     */
     var wsis = {};
+
+    /**
+     * Main Applications.
+     */
     var mainApps = [];
+
+    /**
+     * Client Timeout.
+     */
     const clientTimeout = 30;
 
+    /**
+     * Hostname.
+     */
     this.hostname = OS.hostname();
     
+    /**
+     * PID.
+     */
     this.pid = process.pid;
 
+    /**
+     * Certificate Information.
+     */
     this.certInfo = CertificateGenerator.GenerateCertificateAndKey(this.hostname + '.webverse.info');
     
+    /**
+     * Daemon Port.
+     */
     this.port = null;
     FindFreePorts().then((foundPort) => {
         if (foundPort == null) {
@@ -40,6 +84,10 @@ module.exports = function() {
         WebSocketServer.CreateWebSocketServer(this.port, this.certInfo, OnConnected, OnMessage);
     });
 
+    /**
+     * @function OnConnected Invoked upon connection.
+     * @param {*} wsi WebSocket Interface.
+     */
     function OnConnected(wsi) {
         Logging.Log("[WebVerse Daemon] Client connected. Exchanging handshake.");
 
@@ -49,6 +97,10 @@ module.exports = function() {
         wsis[connID] = wsi;
     }
 
+    /**
+     * @function OnMessage Invoked upon receiving message.
+     * @param {*} data Data.
+     */
     function OnMessage(data) {
         if (data == null) {
             Logging.Log("[WebVerse Daemon] Invalid data.");
@@ -59,6 +111,10 @@ module.exports = function() {
         HandleMessage(message);
     }
 
+    /**
+     * @function HandleMessage Handle a message.
+     * @param {*} data Data.
+     */
     function HandleMessage(data) {
         if (data.topic == null) {
             Logging.Log("[WebVerse Daemon->HandleMessage] Invalid message.");
@@ -137,6 +193,13 @@ module.exports = function() {
         }
     }
 
+    /**
+     * @function AddClient Add a client.
+     * @param {*} connectionID Connection ID.
+     * @param {*} windowID Window ID.
+     * @param {*} tabID Tab ID.
+     * @param {*} clientType Client Type.
+     */
     function AddClient(connectionID, windowID, tabID, clientType) {
         if (clients.hasOwnProperty(connectionID)) {
             Logging.Log('[WebVerse Daemon->AddClient] Client ' + connectionID + ' already exists.');
@@ -160,6 +223,10 @@ module.exports = function() {
         }
     }
 
+    /**
+     * @function RemoveClient Remove a client.
+     * @param {*} connectionID Connection ID.
+     */
     function RemoveClient(connectionID) {
         if (!clients.hasOwnProperty(connectionID)) {
             Logging.Log('[WebVerse Daemon->RemoveClient] Client ' + connectionID + ' does not exist.');
@@ -171,6 +238,10 @@ module.exports = function() {
         delete clientMainApps[connectionID];
     }
 
+    /**
+     * @function ProcessHeartbeat Process a Heartbeat.
+     * @param {*} connectionID Connection ID.
+     */
     function ProcessHeartbeat(connectionID) {
         if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
             Logging.Log('[WebVerse Daemon->ProcessHeartbeat] Received heartbeat for unknown connection ID: ' + connectionID);
@@ -180,6 +251,11 @@ module.exports = function() {
         clientHeartbeatTimers[connectionID] = 0;
     }
 
+    /**
+     * @function ProcessNewTabRequest Process a New Tab Request.
+     * @param {*} connectionID Connection ID.
+     * @param {*} type Tab Type.
+     */
     function ProcessNewTabRequest(connectionID, type) {
         if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
             Logging.Log('[WebVerse Daemon->ProcessNewTabRequest] Received new tab request for unknown connection ID: ' + connectionID);
@@ -205,6 +281,12 @@ module.exports = function() {
         }
     }
 
+    /**
+     * @function ProcessFocusedTabRequest Process a Focused Tab Request.
+     * @param {*} connectionID Connection ID.
+     * @param {*} type Tab Type.
+     * @param {*} url Tab URL.
+     */
     function ProcessFocusedTabRequest(connectionID, type, url) {
         if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
             Logging.Log('[WebVerse Daemon->ProcessNewTabRequest] Received focused tab request for unknown connection ID: ' + connectionID);
@@ -230,6 +312,11 @@ module.exports = function() {
         }
     }
 
+    /**
+     * @function ProcessLoadWorldRequest Process a Load World Request.
+     * @param {*} connectionID Connection ID.
+     * @param {*} url World URL.
+     */
     function ProcessLoadWorldRequest(connectionID, url) {
         if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
             Logging.Log('[WebVerse Daemon->ProcessLoadWorldRequest] Received load world request for unknown connection ID: ' + connectionID);
@@ -237,6 +324,10 @@ module.exports = function() {
         }
     }
 
+    /**
+     * @function ProcessCloseRequest Process a Close Request.
+     * @param {*} connectionID Connection ID.
+     */
     function ProcessCloseRequest(connectionID) {
         if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
             Logging.Log('[WebVerse Daemon->ProcessCloseRequest] Received close request for unknown connection ID: ' + connectionID);
@@ -262,6 +353,9 @@ module.exports = function() {
         }
     }
 
+    /**
+     * @function CheckHeartbeatTimers Check Heartbeat Timers.
+     */
     function CheckHeartbeatTimers() {
         for (timer in clientHeartbeatTimers) {
             if (clientHeartbeatTimers[timer] == null) {

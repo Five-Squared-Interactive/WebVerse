@@ -1,9 +1,19 @@
+// Copyright (c) 2019-2023 Five Squared Interactive. All rights reserved.
+
 const sqlite3 = require('sqlite3');
 
+/**
+ * @class WVHistory
+ * @description Class for managing the WebVerse history.
+ * @param {*} historyDBPath Path to the history database.
+ */
 module.exports = function(historyDBPath) {
 
     this.db = new sqlite3.Database(historyDBPath);
 
+    /**
+     * @method InitializeDB Initialize the database.
+     */
     this.InitializeDB = function() {
         console.log("Initializing History Database.");
         ref = this;
@@ -16,6 +26,11 @@ module.exports = function(historyDBPath) {
         });
     }
 
+    /**
+     * @method AddHistoryEntry Add an entry to the history.
+     * @param {*} timestamp Timestamp for the entry.
+     * @param {*} site Site for the entry.
+     */
     this.AddHistoryEntry = function(timestamp, site) {
         this.db.run(`INSERT INTO history
                 VALUES (?, ?)`, [ timestamp, site ],
@@ -27,6 +42,10 @@ module.exports = function(historyDBPath) {
         );
     }
 
+    /**
+     * @method GetAllHistoryEntries Get all history entries.
+     * @returns The history entries, or null.
+     */
     this.GetAllHistoryEntries = function() {
         this.db.all("SELECT * FROM history", function(err, rows) {
             if (err) {
@@ -42,6 +61,11 @@ module.exports = function(historyDBPath) {
         });
     }
 
+    /**
+     * @method GetHistoryEntry Get a history entry.
+     * @param {*} timestamp Timestamp for the history entry.
+     * @returns The history entry, or null.
+     */
     this.GetHistoryEntry = function(timestamp) {
         this.db.get("SELECT * FROM history WHERE timestamp = ?", [ timestamp ], function(err, row) {
             if (err) {

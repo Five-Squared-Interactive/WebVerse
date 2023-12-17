@@ -1,14 +1,47 @@
+// Copyright (c) 2019-2023 Five Squared Interactive. All rights reserved.
+
 let logConsole = new Console("console-text");
 
+/**
+ * The Daemon PID.
+ */
 let daemonPID = null;
+
+/**
+ * The Daemon Port.
+ */
 let daemonPort = null;
+
+/**
+ * The Daemon Certificate.
+ */
 let daemonCert = null;
+
+/**
+ * The Main App ID.
+ */
 let mainAppID = null;
+
+/**
+ * The Tab View Mode.
+ */
 let tabViewMode = "unfocused";
+
+/**
+ * The Tab ID.
+ */
 let tabID = null;
+
+/**
+ * The Lightweight Runtime Path.
+ */
 let lightweightRuntimePath = null;
+
 UpdateTabViewMode();
 
+/**
+ * Add Event Listeners.
+ */
 window.addEventListener("keydown", (event) => {
     if (event.code == "F12") {
         ToggleConsole();
@@ -42,6 +75,9 @@ document.getElementById("input").addEventListener("keypress", (event) => {
     }
 });
 
+/**
+ * @function GetDaemonInfo Get the daemon information from the URL search parameters.
+ */
 function GetDaemonInfo() {
     params = new URLSearchParams(window.location.search)
     daemonPID = params.get("daemon_pid");
@@ -54,9 +90,15 @@ function GetDaemonInfo() {
 
 GetDaemonInfo();
 
+/**
+ * Establish the daemon connection.
+ */
 let daemonConnection = new DaemonConnection(daemonPort, HandleMessage, 3000, 5);
 let connectionID = null;
 
+/**
+ * @function RecordURL Record the current URL.
+ */
 function RecordURL() {
     activeTab = tabGroup.getActiveTab();
     if (activeTab != null) {
@@ -64,6 +106,10 @@ function RecordURL() {
     }
 }
 
+/**
+ * @function SaveURLValue Save the current URL value.
+ * @param {*} tab 
+ */
 function SaveURLValue(tab) {
     input = document.getElementById("input");
     if (input != null) {
@@ -71,26 +117,44 @@ function SaveURLValue(tab) {
     }
 }
 
+/**
+ * @function AddTab Add a new tab.
+ */
 function AddTab() {
     SendNewTabRequest("NEWTAB");
 }
 
+/**
+ * @function OpenHistory Open the history page.
+ */
 function OpenHistory() {
     SendNewTabRequest("HISTORY");
 }
 
+/**
+ * @function OpenSettings Open the settings page.
+ */
 function OpenSettings() {
     SendNewTabRequest("SETTINGS");
 }
 
+/**
+ * @function OpenAbout Open the about page.
+ */
 function OpenAbout() {
     SendNewTabRequest("ABOUT");
 }
 
+/**
+ * @function CloseApplication Close the application.
+ */
 function CloseApplication() {
     SendCloseRequest();
 }
 
+/**
+ * @function ToggleConsole Toggle the console.
+ */
 function ToggleConsole() {
     var cons = document.getElementById("console");
     if (cons.style.display === "block") {
@@ -100,6 +164,10 @@ function ToggleConsole() {
     }
 }
 
+/**
+ * @function KeyDown Handle a keydown event.
+ * @param {*} event Event.
+ */
 function KeyDown(event) {
     input = document.getElementById("input");
     var inp = String.fromCharCode(event.key);
@@ -116,6 +184,9 @@ function KeyDown(event) {
     }
 }
 
+/**
+ * @function RunURL Run the current URL.
+ */
 function RunURL() {
     url = document.getElementById("input").value;
 
@@ -144,6 +215,9 @@ function RunURL() {
     });
 }
 
+/**
+ * @function ToggleURLMenu Toggle the URL menu.
+ */
 function ToggleURLMenu() {
     var click = document.getElementById("urlmenu");
     if (click.style.display === "block") {
@@ -153,6 +227,9 @@ function ToggleURLMenu() {
     }
 }
 
+/**
+ * @function ToggleFocusMenu Toggle the focus menu.
+ */
 function ToggleFocusMenu() {
     var click = document.getElementById("focusmenu");
     if (click.style.display === "block") {
@@ -162,16 +239,26 @@ function ToggleFocusMenu() {
     }
 }
 
+/**
+ * @function CloseURLMenu Close the URL menu.
+ */
 function CloseURLMenu() {
     var click = document.getElementById("urlmenu");
     click.style.display = "none";
 }
 
+/**
+ * @function CloseFocusMenu Close the focus menu.
+ */
 function CloseFocusMenu() {
     var click = document.getElementById("focusmenu");
     click.style.display = "none";
 }
 
+/**
+ * @function HandleMessage Handle a daemon message.
+ * @param {*} message Message.
+ */
 function HandleMessage(message) {
     var messageContents = JSON.parse(message);
     if (messageContents.topic == null) {
@@ -196,6 +283,10 @@ function HandleMessage(message) {
     }
 }
 
+/**
+ * @function SendHeartbeat Send a daemon heartbeat.
+ * @param {*} connectionID Connection ID for which to send the heartbeat.
+ */
 function SendHeartbeat(connectionID) {
     var heartbeat = {
         topic: "HEARTBEAT",
@@ -204,6 +295,11 @@ function SendHeartbeat(connectionID) {
     daemonConnection.ws.send(JSON.stringify(heartbeat));
 }
 
+/**
+ * @function SendNewTabRequest Send a new tab request.
+ * @param {*} kind Kind of tab to send a request for.
+ * @returns 
+ */
 function SendNewTabRequest(kind) {
     if (daemonConnection == null) {
         logConsole.LogError("[SendNewTabRequest] No Daemon Connection.");
@@ -241,6 +337,10 @@ function SendNewTabRequest(kind) {
     daemonConnection.ws.send(JSON.stringify(request));
 }
 
+/**
+ * @function SendLoadWorldRequest Send a load world request.
+ * @param {*} worldURI World URI.
+ */
 function SendLoadWorldRequest(worldURI) {
     if (daemonConnection == null) {
         logConsole.LogError("[SendLoadWorldRequest] No Daemon Connection.");
@@ -260,6 +360,9 @@ function SendLoadWorldRequest(worldURI) {
     daemonConnection.ws.send(JSON.stringify(request));
 }
 
+/**
+ * @function SendCloseRequest Send a close request.
+ */
 function SendCloseRequest() {
     if (daemonConnection == null) {
         logConsole.LogError("[SendCloseRequest] No Daemon Connection.");
@@ -278,6 +381,10 @@ function SendCloseRequest() {
     daemonConnection.ws.send(JSON.stringify(request));
 }
 
+/**
+ * @function SelectViewMode Select a view mode.
+ * @param {*} mode Mode to select.
+ */
 function SelectViewMode(mode) {
     runtimeType = null;
     
@@ -350,6 +457,9 @@ function SelectViewMode(mode) {
     }
 }
 
+/**
+ * @function UpdateTabViewMode Update the tab view mode.
+ */
 function UpdateTabViewMode() {
     document.getElementById("unfocused").style = "background-color: rgb(127, 127, 127, 0.79)";
     document.getElementById("focused").style = "background-color: rgb(127, 127, 127, 0.79)";

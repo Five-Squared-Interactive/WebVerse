@@ -1,3 +1,5 @@
+// Copyright (c) 2019-2023 Five Squared Interactive. All rights reserved.
+
 const TabGroup = require("electron-tabs");
 const fs = require('fs');
 const ApplicationSettings = require('./applicationsettings');
@@ -5,42 +7,78 @@ const DaemonConnection = require("./nodedaemonconnection");
 const FocusedRuntimeHandler = require("./focusedruntimehandler");
 const ipc = require('electron').ipcRenderer;
 
+/**
+ * Tab URLs.
+ */
 let tabURLs = {};
 
+/**
+ * Application Settings.
+ */
 let applicationSettings = new ApplicationSettings("./webverse.config");
 if (applicationSettings.Initialize() == false) {
   console.log("Error reading WebVerse config.");
   app.quit();
 }
 
+/**
+ * Daemon Process ID.
+ */
 let dPID = null;
 
+/**
+ * Daemon Port.
+ */
 let dPort = null;
 
+/**
+ * Daemon Certificate.
+ */
 let dCert = null;
 
+/**
+ * Daemon Connection.
+ */
 let daemonConnection = null;
 
+/**
+ * Daemon ID.
+ */
 let daemonID = null;
 
+/**
+ * ID of the next tab.
+ */
 let nextTabID = 100;
 
+/**
+ * Handler for Focused Runtimes.
+ */
 let focusedRuntimeHandler = null;
 
+/**
+ * The Tab Group (part of Electron-Tabs).
+ */
 let tabGroup = new TabGroup({
     newTab: {
         title: 'New Tab',
-        src: 'index.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
+        src: 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
         + '&daemon_cert=' + dCert + '&main_app_id='
         + daemonID + '&tab_id=' + nextTabID
         + '&lw_runtime_path=' + applicationSettings.settings['lightweight-runtime'].path
     }
 });
 
+/**
+ * Set up UI events.
+ */
 document.getElementById("minimize-button").onclick = MinimizeApplication;
 document.getElementById("maximize-button").onclick = ToggleMaximizeApplication;
 document.getElementById("close-button").onclick = CloseApplication;
 
+/**
+ * Read Daemon Configuration.
+ */
 //fs.readFile('../Daemon/webverse-daemon-pid.dat', function(err, pidData) {
 fs.readFile('webverse-daemon-pid.dat', function(err, pidData) {
 if (err) { 
@@ -73,6 +111,9 @@ else {
 }
 }.bind({ tabGroup: tabGroup }));
 
+/**
+ * @function AddFirstTab Adds the first tab to the UI.
+ */
 function AddFirstTab() {
     focusedRuntimeHandler = new FocusedRuntimeHandler(
         applicationSettings.settings["focused-runtimes"].runtimes.desktop.path,
@@ -82,7 +123,7 @@ function AddFirstTab() {
     
     tab = tabGroup.addTab({
         title: 'New Tab',
-        src: 'index.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
+        src: 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
         + '&daemon_cert=' + dCert + '&main_app_id='
         + daemonID + '&tab_id=' + nextTabID
         + '&lw_runtime_path=' + applicationSettings.settings['lightweight-runtime'].path
@@ -91,6 +132,10 @@ function AddFirstTab() {
     tab.activate();
 }
 
+/**
+ * @function OnMessage Invoked when a Daemon Message is received.
+ * @param {*} message Message.
+ */
 function OnMessage(message) {
     var messageContents = JSON.parse(message);
     if (messageContents.topic == null) {
@@ -160,6 +205,10 @@ function OnMessage(message) {
     }
 }
 
+/**
+ * @function SendHeartbeat Send a daemon heartbeat.
+ * @param {*} connectionID Connection ID for which to send the heartbeat.
+ */
 function SendHeartbeat(connectionID) {
     var heartbeat = {
         topic: "HEARTBEAT",
@@ -168,12 +217,16 @@ function SendHeartbeat(connectionID) {
     daemonConnection.ws.send(JSON.stringify(heartbeat));
 }
 
+/**
+ * @function CreateTab Create a tab.
+ * @param {*} type Type of tab to create ("WV-RUNTIME", "HISTORY", "SETTINGS", or "ABOUT").
+ */
 function CreateTab(type) {
     title = "none";
     src = "none";
     if (type == "WV-RUNTIME") {
         title = "New Tab";
-        src = 'index.html?daemon_pid=' + dPID + '&daemon_port='
+        src = 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port='
         + dPort + '&daemon_cert=' + dCert + '&main_app_id='
         + daemonID + '&tab_id=' + nextTabID
         + '&lw_runtime_path=' + applicationSettings.settings['lightweight-runtime'].path;
@@ -202,12 +255,17 @@ function CreateTab(type) {
     });
 }
 
-function LoadWorldInFocusedRuntime(connectionID, type, url) {
+/**
+ * @function LoadWorldInFocusedRuntime Load the current world in a focused runtime.
+ * @param {*} type Runtime type to use ("desktop" or "steamvr",
+ * with "teardown" to tear down the focused runtime).
+ * @param {*} url URL of world to load.
+ */
+function LoadWorldInFocusedRuntime(type, url) {
     if (type === "teardown") {
         focusedRuntimeHandler.CloseRuntime();
     }
     else if (type === "desktop") {
-        console.log("swdf");
         focusedRuntimeHandler.LoadWorldInRuntime(url, "desktop");
     }
     else if (type === "steamvr") {
@@ -215,18 +273,30 @@ function LoadWorldInFocusedRuntime(connectionID, type, url) {
     }
 }
 
+/**
+ * Close the main application.
+ */
 function CloseApplication() {
     ipc.send('close');
 }
 
+/**
+ * Minimize the main application.
+ */
 function MinimizeApplication() {
     ipc.send('minimize');
 }
 
+/**
+ * Toggle maximizing/restoring the main application.
+ */
 function ToggleMaximizeApplication() {
     ipc.send('toggle-maximize');
 }
 
+/**
+ * Invoked on application maximize.
+ */
 ipc.on('maximize', function() {
     var buttonimg = document.getElementById("maximize-img");
     if (buttonimg == null) {
@@ -236,6 +306,9 @@ ipc.on('maximize', function() {
     buttonimg.src = "images/restore.png";
 });
 
+/**
+ * Invoked on application unmaximize.
+ */
 ipc.on('unmaximize', function() {
     var buttonimg = document.getElementById("maximize-img");
     if (buttonimg == null) {
@@ -245,7 +318,7 @@ ipc.on('unmaximize', function() {
     buttonimg.src = "images/maximize.png";
 });
 
-function RegisterMaximizeToggleEvents() {
+/*function RegisterMaximizeToggleEvents() {
     ipc.send('toggle-maximize-event', function() {
         var buttonimg = document.getElementById("maximize-img");
         if (buttonimg == null) {
@@ -263,4 +336,4 @@ function RegisterMaximizeToggleEvents() {
         }
         buttonimg.src = "images/restore.png";
     });
-}
+}*/

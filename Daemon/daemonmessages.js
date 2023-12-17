@@ -1,6 +1,13 @@
+// Copyright (c) 2019-2023 Five Squared Interactive. All rights reserved.
+
 const Logging = require('./logging');
 
 module.exports = {
+    /**
+     * @function IdentificationRequest Identification request.
+     * @param {*} connectionID Connection ID.
+     * @returns An Identification Request.
+     */
     IdentificationRequest: function(connectionID) {
         if (connectionID == null) {
             Logging.Log('[DaemonMessages->IdentificationRequest] No connection ID.');
@@ -13,6 +20,14 @@ module.exports = {
         }
     },
 
+    /**
+     * @function IdentificationResponse Identification Response.
+     * @param {*} request Request.
+     * @param {*} type Type of client.
+     * @param {*} windowID Window ID.
+     * @param {*} tabID Tab ID.
+     * @returns An Identification Response.
+     */
     IdentificationResponse: function(request, type, windowID, tabID) {
         if (request == null) {
             Logging.Log('[DaemonMessages->IdentificationResponse] Null request.');
@@ -38,6 +53,11 @@ module.exports = {
         }
     },
 
+    /**
+     * @function Heartbeat Heartbeat Message.
+     * @param {*} connectionID Connection ID.
+     * @returns A Heartbeat Message.
+     */
     Heartbeat: function(connectionID) {
         if (connectionID == null) {
             Logging.Log('[DaemonMessages->Heartbeat] No connection ID.');
@@ -50,6 +70,12 @@ module.exports = {
         }
     },
 
+    /**
+     * @function NewTabRequest New Tab Request.
+     * @param {*} connectionID Connection ID.
+     * @param {*} type Type of tab.
+     * @returns A New Tab Request.
+     */
     NewTabRequest: function(connectionID, type) {
         if (connectionID == null) {
             Logging.Log('[DaemonMessages->NewTabRequest] No connection ID.');
@@ -68,6 +94,13 @@ module.exports = {
         }
     },
 
+    /**
+     * @function FocusedTabRequest Focused Tab Request.
+     * @param {*} connectionID Connection ID.
+     * @param {*} type Type of tab.
+     * @param {*} url Tab URL.
+     * @returns A Focused Tab Request.
+     */
     FocusedTabRequest: function(connectionID, type, url) {
         if (connectionID == null) {
             Logging.Log('[DaemonMessages->FocusedTabRequest] No connection ID.');
@@ -87,6 +120,11 @@ module.exports = {
         }
     },
 
+    /**
+     * @function CloseRequest Close Request.
+     * @param {*} connectionID Connection ID.
+     * @returns A Close Request.
+     */
     CloseRequest: function(connectionID) {
         if (connectionID == null) {
             Logging.Log('[DaemonMessages->CloseRequest] No connection ID.');
@@ -99,6 +137,12 @@ module.exports = {
         }
     },
 
+    /**
+     * @function NewTabCommand New Tab Command.
+     * @param {*} connectionID Connection ID.
+     * @param {*} type Tab Type.
+     * @returns A New Tab Command.
+     */
     NewTabCommand: function(connectionID, type) {
         if (connectionID == null) {
             Logging.Log('[DaemonMessages->NewTabCommand] No connection ID.');
@@ -117,6 +161,13 @@ module.exports = {
         }
     },
 
+    /**
+     * @function FocusedTabCommand Focused Tab Command.
+     * @param {*} connectionID Connection ID.
+     * @param {*} type Tab Type.
+     * @param {*} url Tab URL.
+     * @returns A Focused Tab Command.
+     */
     FocusedTabCommand: function(connectionID, type, url) {
         if (connectionID == null) {
             Logging.Log('[DaemonMessages->FocusedTabCommand] No connection ID.');
@@ -141,6 +192,12 @@ module.exports = {
         }
     },
 
+    /**
+     * @function CloseCommand Close Command.
+     * @param {*} connectionID Connection ID.
+     * @param {*} windowID Window ID.
+     * @returns A Close Command.
+     */
     CloseCommand: function(connectionID, windowID) {
         if (connectionID == null) {
             Logging.Log('[DaemonMessages->CloseCommand] No connection ID.');
