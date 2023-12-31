@@ -55,18 +55,18 @@ module.exports = function(settingsDBPath) {
     /**
      * @method GetStorageSetting Get a storage setting.
      * @param {*} key Key for which to get a storage setting.
-     * @returns The storage setting, or null.
+     * @param {*} callback Function to call on getting the value.
      */
-    this.GetStorageSetting = function(key) {
+    this.GetStorageSetting = function(key, callback) {
         this.db.get("SELECT * FROM storage WHERE key = ?", [ key ], function(err, row) {
             if (err) {
                 console.log("Error getting " + key + ".");
             } else {
                 if (row) {
-                    return row.value;
+                    callback(row.value);
                 } else {
                     console.log(key + " not set.");
-                    return null;
+                    callback(null);
                 }
             }
         });

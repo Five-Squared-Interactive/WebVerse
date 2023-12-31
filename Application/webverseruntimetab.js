@@ -37,7 +37,40 @@ let tabID = null;
  */
 let lightweightRuntimePath = null;
 
+/**
+ * URL to load upon startup.
+ */
+let urlToLoad = null;
+
+/**
+ * List of previous URLs (for history).
+ */
+let previousURLs = [];
+
+
+/**
+ * List of next URLs (for history).
+ */
+let nextURLs = [];
+
+/**
+ * Current URL being served.
+ */
+let currentURL = "";
+
+/**
+ * Whether or not left control is pressed.
+ */
+let lCtrlPressed = false;
+
+/**
+ * Whether or not right control is pressed.
+ */
+let rCtrlPressed = false;
+
 UpdateTabViewMode();
+
+UpdateNavigationButtons();
 
 /**
  * Add Event Listeners.
@@ -45,6 +78,33 @@ UpdateTabViewMode();
 window.addEventListener("keydown", (event) => {
     if (event.code == "F12") {
         ToggleConsole();
+    }
+    else if (event.code == "ControlLeft") {
+        lCtrlPressed = true;
+    }
+    else if (event.code == "ControlRight") {
+        rCtrlPressed = true;
+    }
+    else if (event.code == "KeyT") {
+        if (lCtrlPressed || rCtrlPressed) {
+            // Ctrl+T.
+            AddTab();
+        }
+    }
+    else if (event.code == "KeyH") {
+        if (lCtrlPressed || rCtrlPressed) {
+            // Ctrl+H.
+            OpenHistory();
+        }
+    }
+});
+
+window.addEventListener("keyup", (event) => {
+    if (event.code == "ControlLeft") {
+        lCtrlPressed = false;
+    }
+    else if (event.code == "ControlRight") {
+        rCtrlPressed = true;
     }
 });
 
@@ -68,7 +128,11 @@ document.getElementById("input").addEventListener("keypress", (event) => {
         || event.key == ".") {
     }
     else if (event.key == "Enter") {
+        if (currentURL != null && currentURL != "") {
+            previousURLs.push(currentURL);
+        }
         RunURL();
+        SendHistoryAdditionRequest(input.value);
     }
     else if (event.key == "Backspace") {
         input.value = input.value.slice(0, -1);
@@ -86,6 +150,7 @@ function GetDaemonInfo() {
     mainAppID = params.get("main_app_id");
     tabID = params.get("tab_id");
     lightweightRuntimePath = params.get("lw_runtime_path");
+    urlToLoad = params.get("url_to_load");
 }
 
 GetDaemonInfo();
@@ -103,6 +168,32 @@ function RecordURL() {
     activeTab = tabGroup.getActiveTab();
     if (activeTab != null) {
         SaveURLValue(activeTab);
+    }
+}
+
+/**
+ * @function GoBack Go back in this tab's history.
+ */
+function GoBack() {
+    if (previousURLs.length > 0) {
+        url = previousURLs.pop();
+        nextURLs.push(currentURL);
+        document.getElementById("input").value = url;
+        RunURL();
+    }
+}
+
+/**
+ * @function GoForward Go forward in this tab's history.
+ */
+function GoForward() {
+    logConsole.LogMessage("1");
+    if (nextURLs.length > 0) {
+        logConsole.LogMessage("2");
+        url = nextURLs.pop();
+        previousURLs.push(currentURL);
+        document.getElementById("input").value = url;
+        RunURL();
     }
 }
 
@@ -198,6 +289,9 @@ function RunURL() {
         document.getElementById("input").value = fixedURL;
     }
 
+    currentURL = fixedURL;
+    UpdateNavigationButtons();
+
     fetch(fixedURL).then((response) => {
         contentType = response.headers.get("Content-Type");
         if (contentType.includes("text/html")) {
@@ -209,6 +303,9 @@ function RunURL() {
                 lightweightRuntimePath + "?main_app_id="
                 + mainAppID + "&daemon_port=" + daemonPort
                 + "&max_entries=2048&max_entry_length=2048&max_key_length=512&tab_id=100&world_url=" + fixedURL;
+                logConsole.LogMessage("?main_app_id="
+                + mainAppID + "&daemon_port=" + daemonPort
+                + "&max_entries=2048&max_entry_length=2048&max_key_length=512&tab_id=100&world_url=" + fixedURL);
         }
     }).catch((reason) => {
         logConsole.LogWarning(reason);
@@ -280,6 +377,11 @@ function HandleMessage(message) {
         connectionID = messageContents.connectionID;
         setInterval(function() { SendHeartbeat(connectionID); }, 5000);
         daemonConnection.ws.send(JSON.stringify(resp));
+
+        if (urlToLoad != null) {
+            document.getElementById("input").value = urlToLoad;
+            RunURL();
+        }
     }
 }
 
@@ -354,6 +456,29 @@ function SendLoadWorldRequest(worldURI) {
 
     var request = {
         topic: "LOAD-WORLD-REQ",
+        connectionID: connectionID,
+        url: worldURI
+    };
+    daemonConnection.ws.send(JSON.stringify(request));
+}
+
+/**
+ * @function SendHistoryAdditionRequest Send a history addition request.
+ * @param {*} worldURI World URI.
+ */
+function SendHistoryAdditionRequest(worldURI) {
+    if (daemonConnection == null) {
+        logConsole.LogError("[SendHistoryAdditionRequest] No Daemon Connection.");
+        return;
+    }
+
+    if (daemonConnection.isConnected != true) {
+        logConsole.LogError("[SendHistoryAdditionRequest] Daemon is not connected.");
+        return;
+    }
+
+    var request = {
+        topic: "HIST-ADD-REQ",
         connectionID: connectionID,
         url: worldURI
     };
@@ -480,5 +605,24 @@ function UpdateTabViewMode() {
         default:
         logConsole.LogError("[UpdateTabViewMode] Unknown view mode.");
         break;
+    }
+}
+
+/**
+ * @function UpdateNavigationButtons Update the navigation buttons.
+ */
+function UpdateNavigationButtons() {
+    if (previousURLs.length === 0) {
+        document.getElementById("back").style = "pointer-events: none;";
+    }
+    else {
+        document.getElementById("back").style = "pointer-events: auto;";
+    }
+
+    if (nextURLs.length === 0) {
+        document.getElementById("forward").style = "pointer-events: none";
+    }
+    else {
+        document.getElementById("forward").style = "pointer-events: auto;";
     }
 }

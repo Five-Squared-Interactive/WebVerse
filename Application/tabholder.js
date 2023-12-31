@@ -13,6 +13,16 @@ const ipc = require('electron').ipcRenderer;
 let tabURLs = {};
 
 /**
+ * History.
+ */
+let history = {};
+
+/**
+ * Settings.
+ */
+let settings = {};
+
+/**
  * Application Settings.
  */
 let applicationSettings = new ApplicationSettings("./webverse.config");
@@ -59,15 +69,7 @@ let focusedRuntimeHandler = null;
 /**
  * The Tab Group (part of Electron-Tabs).
  */
-let tabGroup = new TabGroup({
-    newTab: {
-        title: 'New Tab',
-        src: 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
-        + '&daemon_cert=' + dCert + '&main_app_id='
-        + daemonID + '&tab_id=' + nextTabID
-        + '&lw_runtime_path=' + applicationSettings.settings['lightweight-runtime'].path
-    }
-});
+let tabGroup = null;
 
 /**
  * Set up UI events.
@@ -79,24 +81,21 @@ document.getElementById("close-button").onclick = CloseApplication;
 /**
  * Read Daemon Configuration.
  */
-//fs.readFile('../Daemon/webverse-daemon-pid.dat', function(err, pidData) {
-fs.readFile('webverse-daemon-pid.dat', function(err, pidData) {
-if (err) { 
+fs.readFile(applicationSettings.settings['daemon']['pid-file'], function(err, pidData) {
+if (err) {
     console.log("Error getting Daemon PID: " + err);
 }
 else {
     dPID = pidData.toString();
 
-    //fs.readFile('../Daemon/webverse-daemon-port.dat', function(err, portData) {
-    fs.readFile('webverse-daemon-port.dat', function(err, portData) {
+    fs.readFile(applicationSettings.settings['daemon']['port-file'], function(err, portData) {
     if (err) {
         console.log("Error getting Daemon Port: " + err);
     }
     else {
         dPort = portData.toString();
 
-        //fs.readFile('../Daemon/webverse-daemon-connection-' + dPort + '.cert', function(err, certData) {
-        fs.readFile('webverse-daemon-connection-' + dPort + '.cert', function(err, certData) {
+        fs.readFile(applicationSettings.settings['daemon']['cert-file-prefix'] + dPort + '.cert', function(err, certData) {
         if (err) {
             console.log("Error getting Daemon Certificate: " + err);
         }
@@ -115,6 +114,16 @@ else {
  * @function AddFirstTab Adds the first tab to the UI.
  */
 function AddFirstTab() {
+    tabGroup = new TabGroup({
+        newTab: {
+            title: 'WV Runtime',
+            src: 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
+            + '&daemon_cert=' + dCert + '&main_app_id='
+            + daemonID + '&tab_id=' + nextTabID
+            + '&lw_runtime_path=' + applicationSettings.settings['lightweight-runtime'].path
+        }
+    });
+    
     focusedRuntimeHandler = new FocusedRuntimeHandler(
         applicationSettings.settings["focused-runtimes"].runtimes.desktop.path,
         applicationSettings.settings["focused-runtimes"].runtimes.steamvr.path,
@@ -122,7 +131,7 @@ function AddFirstTab() {
         2048, 2048, 512, dPort, daemonID);
     
     tab = tabGroup.addTab({
-        title: 'New Tab',
+        title: 'WV Runtime',
         src: 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
         + '&daemon_cert=' + dCert + '&main_app_id='
         + daemonID + '&tab_id=' + nextTabID
@@ -192,6 +201,37 @@ function OnMessage(message) {
         LoadWorldInFocusedRuntime(messageContents.connectionID,
             messageContents.runtimeType, messageContents.url);
     }
+    else if (messageContents.topic == "HIST-ADD-CMD") {
+        if (messageContents.connectionID == null) {
+            console.log("[OnMessage] Invalid History Add Command.");
+            return;
+        }
+        if (messageContents.url == null) {
+            console.log("[OnMessage] Invalid History Add Command.");
+            return;
+        }
+        AddToHistory(messageContents.url);
+    }
+    else if (messageContents.topic == "SET-UPD-CMD") {
+        if (messageContents.connectionID == null) {
+            console.log("[OnMessage] Invalid Settings Update Command.");
+            return;
+        }
+        if (messageContents.storageEntries == null) {
+            console.log("[OnMessage] Invalid Settings Update Command.");
+            return;
+        }
+        if (messageContents.storageKeyLength == null) {
+            console.log("[OnMessage] Invalid Settings Update Command.");
+            return;
+        }
+        if (messageContents.storageEntryLength == null) {
+            console.log("[OnMessage] Invalid Settings Update Command.");
+            return;
+        }
+        UpdateStorageSettings(messageContents.storageEntries,
+            messageContents.storageKeyLength, messageContents.storageEntryLength);
+    }
     else if (messageContents.topic == "CLOSE-CMD") {
         if (messageContents.connectionID == null) {
             console.log("[OnMessage] Invalid Close Command.");
@@ -225,7 +265,7 @@ function CreateTab(type) {
     title = "none";
     src = "none";
     if (type == "WV-RUNTIME") {
-        title = "New Tab";
+        title = "WV Runtime";
         src = 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port='
         + dPort + '&daemon_cert=' + dCert + '&main_app_id='
         + daemonID + '&tab_id=' + nextTabID
@@ -234,11 +274,21 @@ function CreateTab(type) {
     }
     else if (type == "HISTORY") {
         title = "History";
-        src = "history.html";
+        if (history == null) {
+            src = "history.html?history={}";
+        }
+        else {
+            src = "history.html?history=" + JSON.stringify(history) + '&daemon_pid=' + dPID + '&daemon_port='
+            + dPort + '&daemon_cert=' + dCert + '&main_app_id='
+            + daemonID + '&tab_id=' + nextTabID
+            + '&lw_runtime_path=' + applicationSettings.settings['lightweight-runtime'].path;
+        }
     }
     else if (type == "SETTINGS") {
         title = "Settings";
-        src = "settings.html";
+        src = "settings.html?storage_entries=" + settings.maxEntries  + "&storage_key_length="
+            + settings.maxKeyLength + "&storage_entry_length=" + settings.maxEntryLength + '&daemon_pid='
+            + dPID + '&daemon_port=' + dPort + '&daemon_cert=' + dCert + '&main_app_id=' + daemonID;
     }
     else if (type == "ABOUT") {
         title = "About";
@@ -271,6 +321,29 @@ function LoadWorldInFocusedRuntime(type, url) {
     else if (type === "steamvr") {
         focusedRuntimeHandler.LoadWorldInRuntime(url, "steamvr");
     }
+}
+
+/**
+ * @function AddToHistory Add a URL to the history DB.
+ * @param {*} url URL to add.
+ */
+function AddToHistory(url) {
+    ipc.send('add-to-history', url)
+}
+
+/**
+ * @function UpdateStorageSettings Update storage settings.
+ * @param {*} storageEntries Maximum Storage Entries.
+ * @param {*} storageKeyLength Maximum Storage Key Length.
+ * @param {*} storageEntryLength Maximum Storage Entry Length.
+ */
+function UpdateStorageSettings(storageEntries, storageKeyLength, storageEntryLength) {
+    /*settings = {
+        maxEntries: storageEntries,
+        maxKeyLength: storageKeyLength,
+        maxEntryLength: storageEntryLength
+    };*/
+    ipc.send('update-settings', storageEntries, storageKeyLength, storageEntryLength);
 }
 
 /**
@@ -318,22 +391,16 @@ ipc.on('unmaximize', function() {
     buttonimg.src = "images/maximize.png";
 });
 
-/*function RegisterMaximizeToggleEvents() {
-    ipc.send('toggle-maximize-event', function() {
-        var buttonimg = document.getElementById("maximize-img");
-        if (buttonimg == null) {
-            console.log("[RegisterMaximizeToggleEvents] Unable to get maximize image to toggle.");
-            return;
-        }
-        buttonimg.src = "images/maximize.png";
-    });
+/**
+ * Invoked on history update.
+ */
+ipc.on('update-history', function(evt, hist) {
+    history = hist;
+});
 
-    ipc.send('toggle-restore-event', function() {
-        var buttonimg = document.getElementById("maximize-img");
-        if (buttonimg == null) {
-            console.log("[RegisterMaximizeToggleEvents] Unable to get maximize image to toggle.");
-            return;
-        }
-        buttonimg.src = "images/restore.png";
-    });
-}*/
+/**
+ * Invoked on settings update.
+ */
+ipc.on('update-settings', function(evt, set) {
+    settings = set;
+});

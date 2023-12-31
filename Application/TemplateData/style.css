@@ -179,6 +179,8 @@ html, body {
   width: 75%;
   margin-left: auto;
   margin-right: auto;
+  pointer-events: all;
+  user-select: all;
 }
 
 #history td, #history th {
@@ -208,7 +210,12 @@ html, body {
 }
 
 .h1-info {
-  background-color: white;
+  background-color: black;
+  color: white;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  pointer-events: none;
+  user-select: none;
 }
 
 #runtime-container {
@@ -240,4 +247,33 @@ html, body {
   font-size: xx-large;
   pointer-events: none;
   user-select: none;
+}
+
+.white-form-text {
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  font-size: large;
+  pointer-events: none;
+  user-select: none;
+  margin-bottom: 4px;
+}
+
+.settings-form {
+  margin-left: 39px;
+}
+
+.settings-input {
+  pointer-events: all;
+  user-select: all;
+  font-size: large;
+  width: 79px;
+}
+
+.settings-button {
+  pointer-events: all;
+  user-select: none;
+  color: white;
+  background-color: rgb(141, 147, 158);
+  font-size: x-large;
 }

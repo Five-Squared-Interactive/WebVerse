@@ -11,8 +11,9 @@ class DaemonConnection {
      * @param {*} msgHandler Handler for incoming messages.
      * @param {*} timeout Connection timeout.
      * @param {*} retries Number of connection retries.
+     * @param {*} loggingEnabled Whether or not logging is enabled.
      */
-    constructor(port, msgHandler, timeout, retries) {
+    constructor(port, msgHandler, timeout, retries, loggingEnabled = true) {
         /**
          * @method Connect Connect to the daemon.
          * @param {*} timeout Connection timeout.
@@ -23,7 +24,9 @@ class DaemonConnection {
             this.isConnected = false;
             this.msgHandler = msgHandler;
             
-            logConsole.LogDebug("[DaemonConnection] Connecting to wss://localhost:" + port);
+            if (loggingEnabled) {
+                logConsole.LogDebug("[DaemonConnection] Connecting to wss://localhost:" + port);
+            }
             this.ws = new WebSocket("wss://localhost:" + port);
 
             /**
@@ -31,7 +34,9 @@ class DaemonConnection {
              */
             this.ws.onopen = function() {
                 instance.isConnected = true;
-                logConsole.LogDebug("[WebSocket->OnOpen] Connection opened.");
+                if (loggingEnabled) {
+                    logConsole.LogDebug("[WebSocket->OnOpen] Connection opened.");
+                }
             };
     
             /**
@@ -48,9 +53,13 @@ class DaemonConnection {
              */
             this.ws.onclose = function() {
                 instance.isConnected = false;
-                logConsole.LogDebug("[WebSocket->OnClose] Connection is closed...");
+                if (loggingEnabled) {
+                    logConsole.LogDebug("[WebSocket->OnClose] Connection is closed...");
+                }
                 setTimeout(() => {
-                    logConsole.LogDebug(JSON.stringify(instance));
+                    if (loggingEnabled) {
+                        logConsole.LogDebug(JSON.stringify(instance));
+                    }
                     instance.connect(timeout, retries)
                 }, timeout);
             };
@@ -60,6 +69,6 @@ class DaemonConnection {
     }
 }
 
-module.exports = {
+/*module.exports = {
     DaemonConnection: DaemonConnection
-};
+};*/

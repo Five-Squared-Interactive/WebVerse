@@ -11,13 +11,26 @@
   user-select: none;
   display: none;
   -webkit-app-region: drag;
+  white-space: nowrap;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .etabs-tabgroup.visible {
 	display: block;
 }
 
+.etabs-tabgroup::-webkit-scrollbar {
+  display: none;
+}
+
 .etabs-tabs {
+  
+}
+
+.etabs-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .etabs-tab {

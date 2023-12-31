@@ -121,6 +121,49 @@ module.exports = {
     },
 
     /**
+     * @function HistoryAddRequest History Add Request.
+     * @param {*} connectionID Connection ID.
+     * @param {*} url Tab URL.
+     * @returns A History Add Request.
+     */
+    HistoryAddRequest: function(connectionID, url) {
+        if (connectionID == null) {
+            Logging.Log('[DaemonMessages->HistoryAddRequest] No connection ID.');
+            return null;
+        }
+
+        return {
+            topic: "HIST-ADD-REQ",
+            connectionID: connectionID,
+            url: url
+        }
+    },
+
+    /**
+     * @function SettingsUpdateRequest Settings Update Request.
+     * @param {*} connectionID Connection ID.
+     * @param {*} storageEntries Maximum Storage Entries.
+     * @param {*} storageKeyLength Maximum Storage Key Length.
+     * @param {*} storageEntryLength Maximum Storage Entry Length.
+     * @returns A Settings Update Request.
+     */
+    SettingsUpdateRequest: function(connectionID, storageEntries,
+        storageKeyLength, storageEntryLength) {
+        if (connectionID == null) {
+            Logging.Log('[DaemonMessages->SettingsUpdateRequest] No connection ID.');
+            return null;
+        }
+
+        return {
+            topic: "SET-UPD-REQ",
+            connectionID: connectionID,
+            storageEntries: storageEntries,
+            storageKeyLength: storageKeyLength,
+            storageEntryLength: storageEntryLength
+        }
+    },
+
+    /**
      * @function CloseRequest Close Request.
      * @param {*} connectionID Connection ID.
      * @returns A Close Request.
@@ -189,6 +232,54 @@ module.exports = {
             connectionID: connectionID,
             runtimeType: type,
             url: url
+        }
+    },
+
+    /**
+     * @function HistoryAddCommand History Add Command.
+     * @param {*} connectionID Connection ID.
+     * @param {*} url Tab URL.
+     * @returns A History Add Command.
+     */
+    HistoryAddCommand: function(connectionID, url) {
+        if (connectionID == null) {
+            Logging.Log('[DaemonMessages->HistoryAddCommand] No connection ID.');
+            return null;
+        }
+
+        if (url == null) {
+            Logging.Log('[DaemonMessages->HistoryAddCommand] No url.');
+            return null;
+        }
+
+        return {
+            topic: "HIST-ADD-CMD",
+            connectionID: connectionID,
+            url: url
+        }
+    },
+
+    /**
+     * @function SettingsUpdateCommand Settings Update Command.
+     * @param {*} connectionID Connection ID.
+     * @param {*} storageEntries Maximum Storage Entries.
+     * @param {*} storageKeyLength Maximum Storage Key Length.
+     * @param {*} storageEntryLength Maximum Storage Entry Length.
+     * @returns A Settings Update Command.
+     */
+    SettingsUpdateCommand: function(connectionID, storageEntries,
+        storageKeyLength, storageEntryLength) {
+        if (connectionID == null) {
+            Logging.Log('[DaemonMessages->SettingsUpdateCommand] No connection ID.');
+            return null;
+        }
+
+        return {
+            topic: "SET-UPD-CMD",
+            connectionID: connectionID,
+            storageEntries: storageEntries,
+            storageKeyLength: storageKeyLength,
+            storageEntryLength: storageEntryLength
         }
     },
 

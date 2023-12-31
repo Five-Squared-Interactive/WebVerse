@@ -1,9 +1,28 @@
+<!-- Copyright (c) 2019-2023 Five Squared Interactive. All rights reserved. -->
+
 <!DOCTYPE html>
 <html>
     <head>
         <title>Settings</title>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <link rel="shortcut icon" href="TemplateData/favicon.ico">
+        <link rel="stylesheet" href="TemplateData/style.css">
     </head>
-    <body>
-        <p>This is an example of a simple HTML page with one paragraph.</p>
+    <body class="dark-background">
+        <text class="white-text"></text>
+        <h1 class="h1-info">Settings</h1>
+        <div class="settings-form">
+            <label class="white-form-text" for="sentries">Maximum Storage Entries:</label><br>
+            <input type="number" min="1" max="262143" step="1" class="settings-input" id="sentries" name="sentries"><br><br>
+            <label class="white-form-text" for="skeylen">Maximum Storage Key Length:</label><br>
+            <input type="number" min="5" max="8191" step=1 class="settings-input" id="skeylen" name="skeylen"><br><br>
+            <label class="white-form-text" for="sentrylen">Maximum Storage Entry Length:</label><br>
+            <input type="number" min="9" max="131071" step="1" class="settings-input" id="sentrylen" name="sentrylen"><br><br>
+            <button class="settings-button" onclick="UpdateStorageSettings();">Save</button>
+        </div>
     </body>
+    <script src="./daemonconnection.js"></script>
+    <script src="./settings.js"></script>
 </html>

@@ -44,18 +44,20 @@ module.exports = function(historyDBPath) {
 
     /**
      * @method GetAllHistoryEntries Get all history entries.
+     * @param {*} callback Callback to invoke upon result.
      * @returns The history entries, or null.
      */
-    this.GetAllHistoryEntries = function() {
+    this.GetAllHistoryEntries = function(callback) {
         this.db.all("SELECT * FROM history", function(err, rows) {
             if (err) {
                 console.log("Error getting history entries.");
+                callback(null);
             } else {
                 if (rows) {
-                    return rows;
+                    callback(rows);
                 } else {
                     console.log("Error getting history entries.");
-                    return null;
+                    callback(null);
                 }
             }
         });
@@ -64,18 +66,20 @@ module.exports = function(historyDBPath) {
     /**
      * @method GetHistoryEntry Get a history entry.
      * @param {*} timestamp Timestamp for the history entry.
+     * @param {*} callback Callback to invoke upon result.
      * @returns The history entry, or null.
      */
-    this.GetHistoryEntry = function(timestamp) {
+    this.GetHistoryEntry = function(timestamp, callback) {
         this.db.get("SELECT * FROM history WHERE timestamp = ?", [ timestamp ], function(err, row) {
             if (err) {
                 console.log("Error getting " + timestamp + ".");
+                callback(null);
             } else {
                 if (row) {
-                    return row.value;
+                    callback(row.value);
                 } else {
                     console.log(timestamp + " does not exist.");
-                    return null;
+                    callback(null);
                 }
             }
         });

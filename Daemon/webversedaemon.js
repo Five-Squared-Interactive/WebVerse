@@ -179,6 +179,38 @@ module.exports = function() {
             Logging.Log("[WebVerse Daemon->HandleMessage] Load World request received.");
             ProcessLoadWorldRequest(data.connectionID, data.url);
         }
+        else if (data.topic == "HIST-ADD-REQ") {
+            if (data.connectionID == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] History Add request missing parameter: connectionID.");
+                return;
+            }
+            Logging.Log("[WebVerse Daemon->HandleMessage] History Add request received.");
+            ProcessHistoryAddRequest(data.connectionID, data.url);
+        }
+        else if (data.topic == "SET-UPD-REQ") {
+            if (data.connectionID == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] Settings Update request missing parameter: connectionID.");
+                return;
+            }
+
+            if (data.storageEntries == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] Settings Update request missing parameter: StorageEntries.");
+                return;
+            }
+
+            if (data.storageKeyLength == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] Settings Update request missing parameter: StorageKeyLength.");
+                return;
+            }
+
+            if (data.storageEntryLength == null) {
+                Logging.Log("[WebVerse Daemon->HandleMessage] Settings Update request missing parameter: StorageEntryLength.");
+                return;
+            }
+            Logging.Log("[WebVerse Daemon->HandleMessage] Settings Update request received.");
+
+            ProcessSettingsUpdateRequest(data.connectionID, data.storageEntries, data.storageKeyLength, data.storageEntryLength);
+        }
         else if (data.topic == "CLOSE-REQ") {
             if (data.connectionID == null) {
                 Logging.Log("[WebVerse Daemon->HandleMessage] Close request missing parameter: connectionID.");
@@ -289,7 +321,7 @@ module.exports = function() {
      */
     function ProcessFocusedTabRequest(connectionID, type, url) {
         if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
-            Logging.Log('[WebVerse Daemon->ProcessNewTabRequest] Received focused tab request for unknown connection ID: ' + connectionID);
+            Logging.Log('[WebVerse Daemon->ProcessFocusedTabRequest] Received focused tab request for unknown connection ID: ' + connectionID);
             return;
         }
 
@@ -297,7 +329,7 @@ module.exports = function() {
             for (mainApp in mainApps) {
                 if (mainApps[mainApp] == clientMainApps[connectionID]) {
                     if (wsis[mainApps[mainApp]] == null) {
-                        Logging.Log('[WebVerse Daemon->ProcessNewTabRequest] No WS connection for main app.');
+                        Logging.Log('[WebVerse Daemon->ProcessFocusedTabRequest] No WS connection for main app.');
                     }
                     else {
                         wsis[mainApps[mainApp]].send(JSON.stringify(DaemonMessages.FocusedTabCommand(mainApps[mainApp], type, url)));
@@ -321,6 +353,69 @@ module.exports = function() {
         if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
             Logging.Log('[WebVerse Daemon->ProcessLoadWorldRequest] Received load world request for unknown connection ID: ' + connectionID);
             return;
+        }
+    }
+
+    /**
+     * @function ProcessHistoryAddRequest Process a History Add Request.
+     * @param {*} connectionID Connection ID.
+     * @param {*} url Tab URL.
+     */
+    function ProcessHistoryAddRequest(connectionID, url) {
+        if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
+            Logging.Log('[WebVerse Daemon->ProcessHistoryAddRequest] Received history add request for unknown connection ID: ' + connectionID);
+            return;
+        }
+
+        if (clients[connectionID] == "WV-RUNTIME") {
+            for (mainApp in mainApps) {
+                if (mainApps[mainApp] == clientMainApps[connectionID]) {
+                    if (wsis[mainApps[mainApp]] == null) {
+                        Logging.Log('[WebVerse Daemon->ProcessHistoryAddRequest] No WS connection for main app.');
+                    }
+                    else {
+                        wsis[mainApps[mainApp]].send(JSON.stringify(DaemonMessages.HistoryAddCommand(mainApps[mainApp], url)));
+                    }
+                    return;
+                }
+            }
+            Logging.Log('[WebVerse Daemon->ProcessHistoryAddRequest] Could not find main app.');
+        }
+        else {
+            Logging.Log("[WebVerse Daemon->ProcessHistoryAddRequest] Client cannot request to add to history.");
+        }
+    }
+
+    /**
+     * @function ProcessSettingsUpdateRequest Process a Settings Update Request.
+     * @param {*} connectionID Connection ID.
+     * @param {*} storageEntries Maximum Storage Entries.
+     * @param {*} storageKeyLength Maximum Storage Key Length.
+     * @param {*} storageEntryLength Maximum Storage Entry Length.
+     */
+    function ProcessSettingsUpdateRequest(connectionID, storageEntries, storageKeyLength, storageEntryLength) {
+        if (!clientHeartbeatTimers.hasOwnProperty(connectionID) || clientHeartbeatTimers[connectionID] == null) {
+            Logging.Log('[WebVerse Daemon->ProcessSettingsUpdateRequest] Received settings update request for unknown connection ID: ' + connectionID);
+            return;
+        }
+
+        if (clients[connectionID] == "WV-SETTINGS") {
+            for (mainApp in mainApps) {
+                if (mainApps[mainApp] == clientMainApps[connectionID]) {
+                    if (wsis[mainApps[mainApp]] == null) {
+                        Logging.Log('[WebVerse Daemon->ProcessSettingsUpdateRequest] No WS connection for main app.');
+                    }
+                    else {
+                        wsis[mainApps[mainApp]].send(JSON.stringify(DaemonMessages.SettingsUpdateCommand(mainApps[mainApp],
+                            storageEntries, storageKeyLength, storageEntryLength)));
+                    }
+                    return;
+                }
+            }
+            Logging.Log('[WebVerse Daemon->ProcessSettingsUpdateRequest] Could not find main app.');
+        }
+        else {
+            Logging.Log("[WebVerse Daemon->ProcessSettingsUpdateRequest] Client cannot request to update settings.");
         }
     }
 

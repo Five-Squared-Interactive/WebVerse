@@ -7,18 +7,22 @@
   "keywords": [
     "WebVerse",
     "Application",
-    "Web MetaVerse"
+    "Web Metaverse"
   ],
   "version": "1.0.0",
   "license": "MIT",
+  "repository": {
+    "url": "https://github.com/Five-Squared-Interactive/WebVerse"
+  },
   "devDependencies": {
     "electron": "^26.1.0",
-    "electron-builder": "^24.6.4"
+    "electron-builder": "^24.6.4",
+    "electron-updater": "latest"
   },
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder"
+    "dist": "electron-builder --publish always"
   },
   "build": {
     "appId": "com.fivesqd.webverse",
@@ -38,6 +42,9 @@
       "createStartMenuShortcut": true,
       "installerSidebar": "todo",
       "uninstallerSidebar": "todo"
+    },
+    "win": {
+      "publish": [ "github" ]
     }
   },
   "dependencies": {
