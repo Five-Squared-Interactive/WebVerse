@@ -16,8 +16,7 @@
   },
   "devDependencies": {
     "electron": "^26.1.0",
-    "electron-builder": "^24.6.4",
-    "electron-updater": "latest"
+    "electron-builder": "^24.6.4"
   },
   "main": "main.js",
   "scripts": {
@@ -29,6 +28,28 @@
     "icon": "images/WebVerse.png",
     "productName": "WebVerse",
     "copyright": "Copyright © 2023 Five Squared Interactive",
+    "extraResources": [
+      {
+        "from": "../Daemon/build/",
+        "to": "../Daemon/"
+      },
+      {
+        "from": "../Runtimes/Focused/",
+        "to": "../Runtimes/Focused/"
+      },
+      {
+        "from": "../Runtimes/FocusedSteamVR/",
+        "to": "../Runtimes/FocusedSteamVR/"
+      },
+      {
+        "from": "../Runtimes/Lightweight/",
+        "to": "../Runtimes/Lightweight/"
+      },
+      {
+        "from": "webverse.config.build",
+        "to": "../webverse.config"
+      }
+    ],
     "nsis": {
       "oneClick": false,
       "allowElevation": true,
@@ -39,9 +60,7 @@
       "warningsAsErrors": true,
       "runAfterFinish": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "installerSidebar": "todo",
-      "uninstallerSidebar": "todo"
+      "createStartMenuShortcut": true
     },
     "win": {
       "publish": [ "github" ]
@@ -49,6 +68,7 @@
   },
   "dependencies": {
     "electron-tabs": "latest",
+    "electron-updater": "^4.0.0",
     "ps-node": "latest",
     "sqlite3": "latest",
     "ws": "latest"

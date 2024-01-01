@@ -12,7 +12,7 @@
     "version": "1.0.0",
     "license": "MIT",
     "scripts": {
-        "start": "node runtimedownloader.js https://webverse-runtime.s3.amazonaws.com/builds/22Nov2023/Lightweight-v1.0.0rc1_22Nov2023_3cd0b88.zip Lightweight https://webverse-runtime.s3.amazonaws.com/builds/22Nov2023/Win64Desktop-v1.0.0rc1_22Nov2023_3cd0b88.zip Focused https://webverse-runtime.s3.amazonaws.com/builds/22Nov2023/Win64SteamVR-v1.0.0rc1_22Nov2023_3cd0b88.zip FocusedSteamVR"
+        "start": "node runtimedownloader.js https://webverse-runtime.s3.amazonaws.com/builds/v1.0.0-31Dec2023/LightweightUncompressed-v1.0.0_31Dec2023_0e4b859.zip Lightweight https://webverse-runtime.s3.amazonaws.com/builds/v1.0.0-31Dec2023/Win64Desktop-v1.0.0_31Dec2023_0e4b859.zip Focused https://webverse-runtime.s3.amazonaws.com/builds/v1.0.0-31Dec2023/Win64SteamVR-v1.0.0_31Dec2023_0e4b859.zip FocusedSteamVR"
     },
     "dependencies": {
         "node-downloader-helper": "latest",

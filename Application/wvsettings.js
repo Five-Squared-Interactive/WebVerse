@@ -21,6 +21,7 @@ module.exports = function(settingsDBPath) {
      * @param {*} value Value.
      */
     this.InitializeKey = function(key, value) {
+        ref = this;
         this.db.get("SELECT * FROM storage WHERE key = ?", [ key ], function(err, row) {
             if (err) {
                 console.log("Error checking " + key + ".");
@@ -29,7 +30,7 @@ module.exports = function(settingsDBPath) {
                     console.log(key + " = " + String(row.value));
                 } else {
                     console.log(key + " not set. Setting to default.");
-                    this.db.run("INSERT INTO storage(key, value) VALUES(?, ?)", [ key, value ]);
+                    ref.db.run("INSERT INTO storage(key, value) VALUES(?, ?)", [ key, value ]);
                 }
             }
         });

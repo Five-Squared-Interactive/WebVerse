@@ -1,0 +1,31 @@
+{
+    "history-db": {
+        "path": "./.history.db"
+    },
+    "settings-db": {
+        "path": "./.settings.db"
+    },
+    "focused-runtimes": {
+        "storage-mode": "persistent",
+        "runtimes": {
+            "desktop": {
+                "path": "Runtimes/Focused/Win64Desktop/WebVerse.exe",
+                "tab-id": 10
+            },
+            "steamvr": {
+                "path": "Runtimes/FocusedSteamVR/Win64SteamVR/WebVerse.exe",
+                "tab-id": 11
+            }
+        }
+    },
+    "lightweight-runtime": {
+        "path": "Runtimes/Lightweight/LightweightUncompressed/index.html"
+    },
+    "daemon": {
+        "process-name": "webverse-daemon",
+        "daemon-executable": "Daemon/webverse-daemon",
+        "port-file": ".webverse-daemon-port.dat",
+        "pid-file": ".webverse-daemon-pid.dat",
+        "cert-file-prefix": ".webverse-daemon-connection-"
+    }
+}

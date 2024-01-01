@@ -2,6 +2,7 @@
 
 const TabGroup = require("electron-tabs");
 const fs = require('fs');
+const path = require ('path');
 const ApplicationSettings = require('./applicationsettings');
 const DaemonConnection = require("./nodedaemonconnection");
 const FocusedRuntimeHandler = require("./focusedruntimehandler");
@@ -120,7 +121,7 @@ function AddFirstTab() {
             src: 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
             + '&daemon_cert=' + dCert + '&main_app_id='
             + daemonID + '&tab_id=' + nextTabID
-            + '&lw_runtime_path=' + applicationSettings.settings['lightweight-runtime'].path
+            + '&lw_runtime_path=' + path.join(__dirname, "../../" + applicationSettings.settings['lightweight-runtime'].path)
         }
     });
     
@@ -135,7 +136,7 @@ function AddFirstTab() {
         src: 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
         + '&daemon_cert=' + dCert + '&main_app_id='
         + daemonID + '&tab_id=' + nextTabID
-        + '&lw_runtime_path=' + applicationSettings.settings['lightweight-runtime'].path
+        + '&lw_runtime_path=' + path.join(__dirname, "../../" + applicationSettings.settings['lightweight-runtime'].path)
     });
     nextTabID++;
     tab.activate();
@@ -198,8 +199,8 @@ function OnMessage(message) {
             console.log("[OnMessage] Invalid Focused Tab Command.");
             return;
         }
-        LoadWorldInFocusedRuntime(messageContents.connectionID,
-            messageContents.runtimeType, messageContents.url);
+        LoadWorldInFocusedRuntime(messageContents.runtimeType,
+            messageContents.url);
     }
     else if (messageContents.topic == "HIST-ADD-CMD") {
         if (messageContents.connectionID == null) {
@@ -269,7 +270,7 @@ function CreateTab(type) {
         src = 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port='
         + dPort + '&daemon_cert=' + dCert + '&main_app_id='
         + daemonID + '&tab_id=' + nextTabID
-        + '&lw_runtime_path=' + applicationSettings.settings['lightweight-runtime'].path;
+        + '&lw_runtime_path=' + path.join(__dirname, "../../" + applicationSettings.settings['lightweight-runtime'].path);
         nextTabID++;
     }
     else if (type == "HISTORY") {
@@ -281,7 +282,7 @@ function CreateTab(type) {
             src = "history.html?history=" + JSON.stringify(history) + '&daemon_pid=' + dPID + '&daemon_port='
             + dPort + '&daemon_cert=' + dCert + '&main_app_id='
             + daemonID + '&tab_id=' + nextTabID
-            + '&lw_runtime_path=' + applicationSettings.settings['lightweight-runtime'].path;
+            + '&lw_runtime_path=' + path.join(__dirname, "../../" + applicationSettings.settings['lightweight-runtime'].path);
         }
     }
     else if (type == "SETTINGS") {

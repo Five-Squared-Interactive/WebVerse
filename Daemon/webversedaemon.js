@@ -75,9 +75,9 @@ module.exports = function() {
         }
         this.port = foundPort[0];
 
-        fs.writeFileSync(`webverse-daemon-pid.dat`, this.pid.toString());
-        fs.writeFileSync(`webverse-daemon-port.dat`, this.port.toString());
-        fs.writeFileSync(`webverse-daemon-connection-${this.port}.cert`, this.certInfo.certificate);
+        fs.writeFileSync(`.webverse-daemon-pid.dat`, this.pid.toString());
+        fs.writeFileSync(`.webverse-daemon-port.dat`, this.port.toString());
+        fs.writeFileSync(`.webverse-daemon-connection-${this.port}.cert`, this.certInfo.certificate);
 
         setInterval(function() { CheckHeartbeatTimers() }, 5000);
 
@@ -138,7 +138,7 @@ module.exports = function() {
                 Logging.Log("[WebVerse Daemon->HandleMessage] Heartbeat message missing parameter: connectionID.");
                 return;
             }
-            Logging.Log("[WebVerse Daemon->HandleMessage] Heartbeat message received.");
+            //Logging.Log("[WebVerse Daemon->HandleMessage] Heartbeat message received.");
             ProcessHeartbeat(data.connectionID);
         }
         else if (data.topic == "NEW-TAB-REQ") {

@@ -21,6 +21,9 @@ let mainWindow = null;
  */
 let certificateErrorIgnored = false;
 
+/**
+ * Auto-updating
+ */
 autoUpdater.checkForUpdatesAndNotify();
 
 /**
