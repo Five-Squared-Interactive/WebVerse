@@ -6,6 +6,13 @@ Top-level WebVerse Desktop application.
 
 This is the top-level WebVerse desktop application. It consists of an Electron front-end application, a lightweight WebGL runtime, Desktop runtime, and SteamVR runtime. It also includes a daemon application for facilitating communication between the front-end application and runtimes.
 
+* For the WebVerse Runtime (Unity3D project), see [WebVerse Runtime](https://github.com/Five-Squared-Interactive/WebVerse-Runtime)
+* For the WebVerse World Engine (Unity3D project), see [WebVerse World Engine](https://github.com/Five-Squared-Interactive/WebVerse-WorldEngine)
+* For WebVerse Samples, see [WebVerse Samples](https://github.com/Five-Squared-Interactive/WebVerse-Samples)
+* For the Virtual Environment Markup Language, see [VEML](https://github.com/Five-Squared-Interactive/VEML/wiki/Document-Structure)
+* For the WebVerse JavaScript World APIs, see [World APIs](https://five-squared-interactive.github.io/World-APIs/)
+* For Virtual reality Operating System (VOS) Synchronization Service (VSS), see [VSS](https://github.com/Five-Squared-Interactive/VOS-Synchronization)
+
 ## Architecture
 
 ![WebVerse-Desktop-Application-Architecture](https://github.com/Five-Squared-Interactive/WebVerse/assets/16926525/b49cfd80-14e6-4987-83e0-67bd50041484)
