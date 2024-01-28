@@ -17,7 +17,6 @@ This is the top-level WebVerse desktop application. It consists of an Electron f
 
 ![WebVerse-Desktop-Application-Architecture](https://github.com/Five-Squared-Interactive/WebVerse/assets/16926525/b49cfd80-14e6-4987-83e0-67bd50041484)
 
-
 ## Supported Platforms
 
 * Windows 10/11 with/without SteamVR
@@ -42,6 +41,7 @@ Once WebVerse has been installed, simply run the "WebVerse.exe" program. WebVers
 
 ### Development Prerequisites
 
+* NodeJS 6.0+
 
 ### Setup
 
