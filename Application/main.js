@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2023 Five Squared Interactive. All rights reserved.
+// Copyright (c) 2019-2024 Five Squared Interactive. All rights reserved.
 
 const electron = require('electron');
 const { autoUpdater } = require("electron-updater")

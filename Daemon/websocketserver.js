@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2023 Five Squared Interactive. All rights reserved.
+// Copyright (c) 2019-2024 Five Squared Interactive. All rights reserved.
 
 const ws = require('ws');
 const https = require('https');

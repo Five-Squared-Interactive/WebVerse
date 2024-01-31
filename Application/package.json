@@ -9,7 +9,7 @@
     "Application",
     "Web Metaverse"
   ],
-  "version": "1.0.0",
+  "version": "1.0.2",
   "license": "MIT",
   "repository": {
     "url": "https://github.com/Five-Squared-Interactive/WebVerse"
@@ -27,7 +27,7 @@
     "appId": "com.fivesqd.webverse",
     "icon": "images/WebVerse.png",
     "productName": "WebVerse",
-    "copyright": "Copyright © 2023 Five Squared Interactive",
+    "copyright": "Copyright © 2024 Five Squared Interactive",
     "extraResources": [
       {
         "from": "../Daemon/build/",
