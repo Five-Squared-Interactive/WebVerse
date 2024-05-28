@@ -31,6 +31,11 @@ let daemonID = null;
 let nextTabID = null;
 
 /**
+ * The World Load Timeout.
+ */
+let worldLoadTimeout = null;
+
+/**
  * Lightweight Runtime Path.
  */
 let lightweightRuntimePath = null;
@@ -50,7 +55,8 @@ function PopulateHistoryTable(hist) {
         cell2.innerHTML = "<a href='webverseruntimetab.html?daemon_pid=" + dPID + "&daemon_port="
         + dPort + "&daemon_cert=" + dCert + "&main_app_id="
         + daemonID + "&tab_id=" + nextTabID
-        + "&lw_runtime_path=" + lightweightRuntimePath + "&url_to_load=" + entry.site + "'>" + entry.site + "</a>";
+        + "&lw_runtime_path=" + lightweightRuntimePath + "&files_directory=Files&world_load_timeout="
+        + worldLoadTimeout + "&url_to_load=" + entry.site + "'>" + entry.site + "</a>";
     });
 }
 
@@ -65,6 +71,7 @@ function GetQueryParams() {
     dCert = params.get("daemon_cert");
     daemonID = params.get("main_app_id");
     nextTabID = params.get("tab_id");
+    worldLoadTimeout = params.get("world_load_timeout");
     lightweightRuntimePath = params.get("lw_runtime_path");
 }
 

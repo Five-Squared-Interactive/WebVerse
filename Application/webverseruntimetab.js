@@ -33,6 +33,11 @@ let tabViewMode = "unfocused";
 let tabID = null;
 
 /**
+ * The World Load Timeout.
+ */
+let worldLoadTimeout = null;
+
+/**
  * The Lightweight Runtime Path.
  */
 let lightweightRuntimePath = null;
@@ -149,6 +154,7 @@ function GetDaemonInfo() {
     daemonCert = params.get("daemon_cert");
     mainAppID = params.get("main_app_id");
     tabID = params.get("tab_id");
+    worldLoadTimeout = params.get("world_load_timeout");
     lightweightRuntimePath = params.get("lw_runtime_path");
     urlToLoad = params.get("url_to_load");
 }
@@ -302,10 +308,8 @@ function RunURL() {
             document.getElementById("runtime-container").src =
                 lightweightRuntimePath + "?main_app_id="
                 + mainAppID + "&daemon_port=" + daemonPort
-                + "&max_entries=2048&max_entry_length=2048&max_key_length=512&tab_id=100&world_url=" + fixedURL;
-                logConsole.LogMessage("?main_app_id="
-                + mainAppID + "&daemon_port=" + daemonPort
-                + "&max_entries=2048&max_entry_length=2048&max_key_length=512&tab_id=100&world_url=" + fixedURL);
+                + "&max_entries=2048&max_entry_length=2048&max_key_length=512&tab_id=100&files_directory=Files&world_load_timeout="
+                + worldLoadTimeout + "&world_url=" + fixedURL;
         }
     }).catch((reason) => {
         logConsole.LogWarning(reason);

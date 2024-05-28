@@ -73,6 +73,11 @@ let focusedRuntimeHandler = null;
 let tabGroup = null;
 
 /**
+ * Whether or not this is in debug mode.
+ */
+let debugMode = false;
+
+/**
  * Set up UI events.
  */
 document.getElementById("minimize-button").onclick = MinimizeApplication;
@@ -115,28 +120,44 @@ else {
  * @function AddFirstTab Adds the first tab to the UI.
  */
 function AddFirstTab() {
-    tabGroup = new TabGroup({
-        newTab: {
-            title: 'WV Runtime',
-            src: 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
-            + '&daemon_cert=' + dCert + '&main_app_id='
-            + daemonID + '&tab_id=' + nextTabID
-            + '&lw_runtime_path=' + path.join(__dirname, "../../" + applicationSettings.settings['lightweight-runtime'].path)
-        }
-    });
+    if (debugMode) {
+        tabGroup = new TabGroup({
+            newTab: {
+                title: 'WV Runtime',
+                src: 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
+                + '&daemon_cert=' + dCert + '&main_app_id='
+                + daemonID + '&tab_id=' + nextTabID
+                + '&lw_runtime_path=' + path.join(__dirname, "../../" + applicationSettings.settings['lightweight-runtime'].path)
+            }
+        });
+    }
+    else {
+        tabGroup = new TabGroup({
+            newTab: {
+                title: 'WV Runtime',
+                src: 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
+                + '&daemon_cert=' + dCert + '&main_app_id='
+                + daemonID + '&tab_id=' + nextTabID
+                + '&lw_runtime_path=' + path.join(__dirname, applicationSettings.settings['lightweight-runtime'].path)
+            }
+        });
+    }
     
     focusedRuntimeHandler = new FocusedRuntimeHandler(
         applicationSettings.settings["focused-runtimes"].runtimes.desktop.path,
         applicationSettings.settings["focused-runtimes"].runtimes.steamvr.path,
         applicationSettings.settings["focused-runtimes"]["storage-mode"],
-        2048, 2048, 512, dPort, daemonID);
+        2048, 2048, 512, dPort, daemonID, applicationSettings.settings["world-load-timeout"],
+        applicationSettings.settings["cache-directory"]);
     
     tab = tabGroup.addTab({
         title: 'WV Runtime',
         src: 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port=' + dPort
         + '&daemon_cert=' + dCert + '&main_app_id='
         + daemonID + '&tab_id=' + nextTabID
-        + '&lw_runtime_path=' + path.join(__dirname, "../../" + applicationSettings.settings['lightweight-runtime'].path)
+        + '&lw_runtime_path=' + path.join(__dirname, applicationSettings.settings['lightweight-runtime'].path
+        + '&world_load_timeout=' + applicationSettings.settings["world-load-timeout"]
+        )
     });
     nextTabID++;
     tab.activate();
@@ -267,10 +288,22 @@ function CreateTab(type) {
     src = "none";
     if (type == "WV-RUNTIME") {
         title = "WV Runtime";
-        src = 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port='
-        + dPort + '&daemon_cert=' + dCert + '&main_app_id='
-        + daemonID + '&tab_id=' + nextTabID
-        + '&lw_runtime_path=' + path.join(__dirname, "../../" + applicationSettings.settings['lightweight-runtime'].path);
+        if (debugMode) {
+            src = 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port='
+            + dPort + '&daemon_cert=' + dCert + '&main_app_id='
+            + daemonID + '&tab_id=' + nextTabID
+            + '&lw_runtime_path=' + path.join(__dirname, "../../" + applicationSettings.settings['lightweight-runtime'].path
+            + '&world_load_timeout=' + applicationSettings.settings["world-load-timeout"]
+            );
+        }
+        else {
+            src = 'webverseruntimetab.html?daemon_pid=' + dPID + '&daemon_port='
+            + dPort + '&daemon_cert=' + dCert + '&main_app_id='
+            + daemonID + '&tab_id=' + nextTabID
+            + '&lw_runtime_path=' + path.join(__dirname, applicationSettings.settings['lightweight-runtime'].path
+            + '&world_load_timeout=' + applicationSettings.settings["world-load-timeout"]
+            );
+        }
         nextTabID++;
     }
     else if (type == "HISTORY") {
@@ -279,10 +312,22 @@ function CreateTab(type) {
             src = "history.html?history={}";
         }
         else {
-            src = "history.html?history=" + JSON.stringify(history) + '&daemon_pid=' + dPID + '&daemon_port='
-            + dPort + '&daemon_cert=' + dCert + '&main_app_id='
-            + daemonID + '&tab_id=' + nextTabID
-            + '&lw_runtime_path=' + path.join(__dirname, "../../" + applicationSettings.settings['lightweight-runtime'].path);
+            if (debugMode) {
+                src = "history.html?history=" + JSON.stringify(history) + '&daemon_pid=' + dPID + '&daemon_port='
+                + dPort + '&daemon_cert=' + dCert + '&main_app_id='
+                + daemonID + '&tab_id=' + nextTabID
+                + '&lw_runtime_path=' + path.join(__dirname, "../../" + applicationSettings.settings['lightweight-runtime'].path
+                + '&world_load_timeout=' + applicationSettings.settings["world-load-timeout"]
+                );
+            }
+            else {
+                src = "history.html?history=" + JSON.stringify(history) + '&daemon_pid=' + dPID + '&daemon_port='
+                + dPort + '&daemon_cert=' + dCert + '&main_app_id='
+                + daemonID + '&tab_id=' + nextTabID
+                + '&lw_runtime_path=' + path.join(__dirname, applicationSettings.settings['lightweight-runtime'].path
+                + '&world_load_timeout=' + applicationSettings.settings["world-load-timeout"]
+                );
+            }
         }
     }
     else if (type == "SETTINGS") {
