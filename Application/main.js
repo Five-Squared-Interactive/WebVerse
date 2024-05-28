@@ -10,6 +10,7 @@ const DaemonRunner = require('./daemonrunner');
 const ipcMain = electron.ipcMain;
 const app = electron.app;
 const globalShortcut = electron.globalShortcut;
+const fs = require('fs');
 
 /**
  * Main window.
@@ -82,6 +83,10 @@ app.on('browser-window-focus', function () {
  * Handle application ready.
  */
 app.on('ready', function () {
+  if (applicationSettings.settings['clear-cache-on-startup'] == true) {
+    fs.rmSync(applicationSettings.settings['cache-directory'], { recursive: true, force: true });
+  }
+
   const daemonRunner = new DaemonRunner(applicationSettings.settings.daemon['process-name'],
     applicationSettings.settings.daemon['daemon-executable']);
   daemonRunner.DoesDaemonExist(function(res) {

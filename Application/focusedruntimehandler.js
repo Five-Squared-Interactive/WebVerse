@@ -12,11 +12,16 @@ const { spawn } = require('child_process');
  * @param {*} maxKeyLength Maximum storage entry key length to use.
  * @param {*} daemonPort Daemon port to use.
  * @param {*} mainAppID Main application's ID.
+ * @param {*} worldLoadTimeout World load timeout.
+ * @param {*} filesDirectory Files directory.
  */
 module.exports = function(desktopRuntimePath, steamVRRuntimePath, storageMode,
-    maxEntries, maxEntryLength, maxKeyLength, daemonPort, mainAppID) {
+    maxEntries, maxEntryLength, maxKeyLength, daemonPort, mainAppID,
+    worldLoadTimeout, filesDirectory) {
     var runtime = null;
     
+    var debugMode = true;
+
     /**
      * @method LoadWorldInRuntime Loads a given world in a focused runtime.
      * @param {*} worldURI URI to the world.
@@ -25,19 +30,36 @@ module.exports = function(desktopRuntimePath, steamVRRuntimePath, storageMode,
     this.LoadWorldInRuntime = function(worldURI, mode) {
         CloseRuntime();
         if (mode == "desktop") {
-            console.log("uri=" + worldURI + " storagemode=" + storageMode + " maxentries=" + maxEntries +
-            " maxentrylength=" + maxEntryLength + " maxkeylength=" + maxKeyLength + "daemonport=" + daemonPort +
-            "mainappid=" + mainAppID);
-            runtime = spawn(desktopRuntimePath, [ "uri=" + worldURI,
-                "storagemode=" + storageMode, "maxentries=" + maxEntries,
-                "maxentrylength=" + maxEntryLength, "maxkeylength=" + maxKeyLength,
-                "daemonport=" + daemonPort, "mainappid=" + mainAppID, "tabid=10" ]);
+            if (debugMode) {
+                runtime = spawn(desktopRuntimePath, [ "uri=" + worldURI,
+                    "storagemode=" + storageMode, "maxentries=" + maxEntries,
+                    "maxentrylength=" + maxEntryLength, "maxkeylength=" + maxKeyLength,
+                    "daemonport=" + daemonPort, "mainappid=" + mainAppID, "tabid=10",
+                    "worldloadtimeout=" + worldLoadTimeout, "filesdirectory=" + "../../Application/" + filesDirectory ]);
+            }
+            else {
+                runtime = spawn(desktopRuntimePath, [ "uri=" + worldURI,
+                    "storagemode=" + storageMode, "maxentries=" + maxEntries,
+                    "maxentrylength=" + maxEntryLength, "maxkeylength=" + maxKeyLength,
+                    "daemonport=" + daemonPort, "mainappid=" + mainAppID, "tabid=10",
+                    "worldloadtimeout=" + worldLoadTimeout, "filesdirectory=" + filesDirectory ]);
+            }
         }
         else if (mode == "steamvr") {
-            runtime = spawn(steamVRRuntimePath, [ "uri=" + worldURI,
-                "storagemode=" + storageMode, "maxentries=" + maxEntries,
-                "maxentrylength=" + maxEntryLength, "maxkeylength=" + maxKeyLength,
-                "daemonport=" + daemonPort, "mainappid=" + mainAppID, "tabid=11" ]);
+            if (debugMode) {
+                runtime = spawn(steamVRRuntimePath, [ "uri=" + worldURI,
+                    "storagemode=" + storageMode, "maxentries=" + maxEntries,
+                    "maxentrylength=" + maxEntryLength, "maxkeylength=" + maxKeyLength,
+                    "daemonport=" + daemonPort, "mainappid=" + mainAppID, "tabid=11",
+                    "worldloadtimeout=" + worldLoadTimeout, "filesdirectory=" + "../../Application/" + filesDirectory ]);
+            }
+            else {
+                runtime = spawn(steamVRRuntimePath, [ "uri=" + worldURI,
+                    "storagemode=" + storageMode, "maxentries=" + maxEntries,
+                    "maxentrylength=" + maxEntryLength, "maxkeylength=" + maxKeyLength,
+                    "daemonport=" + daemonPort, "mainappid=" + mainAppID, "tabid=11",
+                    "worldloadtimeout=" + worldLoadTimeout, "filesdirectory=" +  filesDirectory ]);
+            }
         }
         else {
             console.error("[FocusedRuntimeHandler->LoadWorldInRuntime] Unknown mode.");
