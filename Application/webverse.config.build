@@ -22,7 +22,7 @@
         "path": "../../Runtimes/Lightweight/WebGLUncompressed/index.html"
     },
     "world-load-timeout": 120,
-    "cache-directory": "../../WebVerse/Cache",
+    "cache-directory": "Cache",
     "clear-cache-on-startup": true,
     "daemon": {
         "process-name": "webverse-daemon",
