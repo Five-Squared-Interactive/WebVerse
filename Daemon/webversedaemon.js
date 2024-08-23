@@ -339,6 +339,20 @@ module.exports = function() {
             }
             Logging.Log('[WebVerse Daemon->ProcessFocusedTabRequest] Could not find main app.');
         }
+        else if (clients[connectionID] == "WV-FOCUSED-RUNTIME") {
+            for (mainApp in mainApps) {
+                if (mainApps[mainApp] == clientMainApps[connectionID]) {
+                    if (wsis[mainApps[mainApp]] == null) {
+                        Logging.Log('[WebVerse Daemon->ProcessFocusedTabRequest] No WS connection for main app.');
+                    }
+                    else {
+                        wsis[mainApps[mainApp]].send(JSON.stringify(DaemonMessages.FocusedTabCommand(mainApps[mainApp], type, url)));
+                    }
+                    return;
+                }
+            }
+            Logging.Log('[WebVerse Daemon->ProcessFocusedTabRequest] Could not find main app.');
+        }
         else {
             Logging.Log("[WebVerse Daemon->ProcessFocusedTabRequest] Client cannot request a focused tab.");
         }
@@ -430,6 +444,20 @@ module.exports = function() {
         }
 
         if (clients[connectionID] == "WV-RUNTIME") {
+            for (mainApp in mainApps) {
+                if (mainApps[mainApp] == clientMainApps[connectionID]) {
+                    if (wsis[mainApps[mainApp]] == null) {
+                        Logging.Log('[WebVerse Daemon->ProcessCloseRequest] No WS connection for main app.');
+                    }
+                    else {
+                        wsis[mainApps[mainApp]].send(JSON.stringify(DaemonMessages.CloseCommand(connectionID, mainApps[mainApp])));
+                    }
+                    return;
+                }
+            }
+            Logging.Log('[WebVerse Daemon->ProcessCloseRequest] Could not find main app.');
+        }
+        else if (clients[connectionID] == "WV-FOCUSED-RUNTIME") {
             for (mainApp in mainApps) {
                 if (mainApps[mainApp] == clientMainApps[connectionID]) {
                     if (wsis[mainApps[mainApp]] == null) {
