@@ -26,8 +26,9 @@ module.exports = function(desktopRuntimePath, steamVRRuntimePath, storageMode,
      * @method LoadWorldInRuntime Loads a given world in a focused runtime.
      * @param {*} worldURI URI to the world.
      * @param {*} mode Type of runtime to use.
+     * @param {*} historyString History string to use.
      */
-    this.LoadWorldInRuntime = function(worldURI, mode) {
+    this.LoadWorldInRuntime = function(worldURI, mode, historyString) {
         CloseRuntime();
         if (mode == "desktop") {
             if (debugMode) {
@@ -35,14 +36,16 @@ module.exports = function(desktopRuntimePath, steamVRRuntimePath, storageMode,
                     "storagemode=" + storageMode, "maxentries=" + maxEntries,
                     "maxentrylength=" + maxEntryLength, "maxkeylength=" + maxKeyLength,
                     "daemonport=" + daemonPort, "mainappid=" + mainAppID, "tabid=10",
-                    "worldloadtimeout=" + worldLoadTimeout, "filesdirectory=" + "../../Application/" + filesDirectory ]);
+                    "worldloadtimeout=" + worldLoadTimeout, "filesdirectory=" + "../../Application/" + filesDirectory,
+                    "history=" + historyString ]);
             }
             else {
                 runtime = spawn(desktopRuntimePath, [ "uri=" + worldURI,
                     "storagemode=" + storageMode, "maxentries=" + maxEntries,
                     "maxentrylength=" + maxEntryLength, "maxkeylength=" + maxKeyLength,
                     "daemonport=" + daemonPort, "mainappid=" + mainAppID, "tabid=10",
-                    "worldloadtimeout=" + worldLoadTimeout, "filesdirectory=" + filesDirectory ]);
+                    "worldloadtimeout=" + worldLoadTimeout, "filesdirectory=" + filesDirectory,
+                    "history=" + historyString ]);
             }
         }
         else if (mode == "steamvr") {
@@ -51,14 +54,16 @@ module.exports = function(desktopRuntimePath, steamVRRuntimePath, storageMode,
                     "storagemode=" + storageMode, "maxentries=" + maxEntries,
                     "maxentrylength=" + maxEntryLength, "maxkeylength=" + maxKeyLength,
                     "daemonport=" + daemonPort, "mainappid=" + mainAppID, "tabid=11",
-                    "worldloadtimeout=" + worldLoadTimeout, "filesdirectory=" + "../../Application/" + filesDirectory ]);
+                    "worldloadtimeout=" + worldLoadTimeout, "filesdirectory=" + "../../Application/" + filesDirectory,
+                    "history=" + historyString ]);
             }
             else {
                 runtime = spawn(steamVRRuntimePath, [ "uri=" + worldURI,
                     "storagemode=" + storageMode, "maxentries=" + maxEntries,
                     "maxentrylength=" + maxEntryLength, "maxkeylength=" + maxKeyLength,
                     "daemonport=" + daemonPort, "mainappid=" + mainAppID, "tabid=11",
-                    "worldloadtimeout=" + worldLoadTimeout, "filesdirectory=" +  filesDirectory ]);
+                    "worldloadtimeout=" + worldLoadTimeout, "filesdirectory=" +  filesDirectory,
+                    "history=" + historyString ]);
             }
         }
         else {

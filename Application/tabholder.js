@@ -221,7 +221,7 @@ function OnMessage(message) {
             return;
         }
         LoadWorldInFocusedRuntime(messageContents.runtimeType,
-            messageContents.url);
+            messageContents.url, history == null ? "{}" : JSON.stringify(history));
     }
     else if (messageContents.topic == "HIST-ADD-CMD") {
         if (messageContents.connectionID == null) {
@@ -362,10 +362,10 @@ function LoadWorldInFocusedRuntime(type, url) {
         focusedRuntimeHandler.CloseRuntime();
     }
     else if (type === "desktop") {
-        focusedRuntimeHandler.LoadWorldInRuntime(url, "desktop");
+        focusedRuntimeHandler.LoadWorldInRuntime(url, "desktop", history == null ? "{}" : JSON.stringify(history));
     }
     else if (type === "steamvr") {
-        focusedRuntimeHandler.LoadWorldInRuntime(url, "steamvr");
+        focusedRuntimeHandler.LoadWorldInRuntime(url, "steamvr", history == null ? "{}" : JSON.stringify(history));
     }
 }
 
