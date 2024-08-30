@@ -3,7 +3,7 @@ html {
 }
 html, body {
     margin: 0;
-    background-color: #000000;
+    background-color: #00000043;
 }
 
 .urlback {
@@ -235,9 +235,10 @@ html, body {
 }
 
 .dark-background {
-  background-color: #000000;
+  background-color: #00000000;
   pointer-events: none;
   user-select: none;
+  -webkit-app-region: drag;
 }
 
 .white-text {

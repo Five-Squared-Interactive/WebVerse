@@ -1,1 +1,0 @@
-let versionString = "v1.3.0";
