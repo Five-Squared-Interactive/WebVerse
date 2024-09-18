@@ -9,10 +9,10 @@
         "Runtime",
         "Web MetaVerse"
     ],
-    "version": "1.3.0",
+    "version": "2.0.0",
     "license": "MIT",
     "scripts": {
-        "start": "node runtimedownloader.js https://webverse-runtime.s3.amazonaws.com/builds/v1.3.0-21Aug2024/LightweightUncompressed-v1.3.0_21Aug2024_d45f4ae.zip Lightweight https://webverse-runtime.s3.amazonaws.com/builds/v1.3.0-21Aug2024/Win64Desktop-v1.3.0_21Aug2024_d45f4ae.zip Focused https://webverse-runtime.s3.amazonaws.com/builds/v1.3.0-21Aug2024/Win64SteamVR-v1.3.0_21Aug2024_d45f4ae.zip FocusedSteamVR"
+        "start": "node runtimedownloader.js https://webverse-runtime.s3.amazonaws.com/builds/v2.0.0-17Sep2024/Win64Desktop-v2.0.0_17Sep2024_5973a57.zip Desktop"
     },
     "dependencies": {
         "node-downloader-helper": "latest",

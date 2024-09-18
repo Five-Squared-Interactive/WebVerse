@@ -53,31 +53,21 @@ Once WebVerse has been installed, simply run the "WebVerse.exe" program. WebVers
 
 ### Running and Building
 
-1. Build the Daemon: From the top-level source code directory, navigate to  the `Daemon/` directory, install the NPM dependencies, and run the build script:
-   ```
-   cd Application
-   npm install
-   npm run build
-   ```
-   The built daemon will be located at build/webverse-daemon.exe.
-
-2. Download the Runtimes: From the top-level source code directory, navigate to the `Runtimes/` directory, install the NPM dependencies, and run the download script:
+1. Download the Runtimes: From the top-level source code directory, navigate to the `Runtimes/` directory, install the NPM dependencies, and run the download script:
    ```
    cd Runtimes
    npm install
    npm run start
    ```
 
-3. Run WebVerse: From the top-level source code directory, navigate to the `Application/` directory, install the NPM dependencies, and run the application:
+2. Run WebVerse: From the top-level source code directory, install the NPM dependencies, and run the application:
    ```
-   cd Application
    npm install
    npm start
    ```
 
-5. Build the WebVerse application package: From the top-level source code directory, navigate to the `Application/` directory, install the NPM dependencies, and run the build script:
+5. Build the WebVerse application package: From the top-level source code directory, install the NPM dependencies, and run the build script:
    ```
-   cd Application
    npm install
    npm run dist
    ```
@@ -88,4 +78,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Email - fivesquaredtechnologies@gmail.com
+Email - webverse@fivesquaredinteractive.com

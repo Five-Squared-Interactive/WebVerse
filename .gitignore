@@ -1,20 +1,7 @@
-Application/dist/*
-Application/node_modules/*
-Application/daemon.log
-Application/history.db
-Application/package-lock.json
-Application/settings.db
-Application/webverse-daemon-connection-*.cert
-Application/webverse-daemon-pid.dat
-Application/webverse-daemon-port.dat
+dist/*
+node_modules/*
+package-lock.json
 
-Daemon/build/*
-Daemon/node_modules/*
-Daemon/daemon.log
-Daemon/package-lock.json
-
-Runtimes/Focused/*
-Runtimes/FocusedSteamVR/*
-Runtimes/Lightweight/*
+Runtimes/Desktop/*
 Runtimes/node_modules/*
 Runtimes/package-lock.json
