@@ -14,11 +14,6 @@ const globalShortcut = electron.globalShortcut;
 let mainWindow = null;
 
 /**
- * Auto-updating.
- */
-autoUpdater.checkForUpdatesAndNotify();
-
-/**
  * Application settings.
  */
 let applicationSettings = null;
@@ -59,7 +54,33 @@ app.on('ready', function () {
 
     runtimeHandler.LoadRuntime();
 
-    app.quit();
+    /**
+     * Auto-updating.
+     */
+    autoUpdater.checkForUpdatesAndNotify();
+
+    //app.quit();
+});
+
+/**
+ * Handle update not available.
+ */
+autoUpdater.on('update-not-available', (info) => {
+  app.quit();
+});
+
+/**
+ * Handle error.
+ */
+autoUpdater.on('error', (err) => {
+  app.quit();
+});
+
+/**
+ * Handle update downloaded.
+ */
+autoUpdater.on('update-downloaded', (info) => {
+  app.quit();
 });
 
 /**
