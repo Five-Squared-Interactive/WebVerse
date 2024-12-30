@@ -9,7 +9,7 @@
     "Application",
     "Web Metaverse"
   ],
-  "version": "2.0.3",
+  "version": "2.0.4",
   "license": "MIT",
   "repository": {
     "url": "https://github.com/Five-Squared-Interactive/WebVerse"
@@ -36,6 +36,10 @@
       {
         "from": "webverse.config",
         "to": "../webverse.config"
+      },
+      {
+        "from": ".wv-settings",
+        "to": "../.wv-settings"
       }
     ],
     "nsis": {
