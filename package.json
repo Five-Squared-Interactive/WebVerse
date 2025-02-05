@@ -9,7 +9,7 @@
     "Application",
     "Web Metaverse"
   ],
-  "version": "2.0.5",
+  "version": "2.1.0",
   "license": "MIT",
   "repository": {
     "url": "https://github.com/Five-Squared-Interactive/WebVerse"
@@ -43,11 +43,11 @@
       }
     ],
     "nsis": {
-      "oneClick": false,
+      "oneClick": true,
       "allowElevation": true,
-      "allowToChangeInstallationDirectory": true,
       "deleteAppDataOnUninstall": true,
       "displayLanguageSelector": true,
+      "perMachine": false,
       "shortcutName": "WebVerse",
       "warningsAsErrors": true,
       "runAfterFinish": true,
