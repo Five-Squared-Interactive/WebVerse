@@ -3,5 +3,6 @@ node_modules/*
 package-lock.json
 
 Runtimes/Desktop/*
+Runtimes/Desktop-Mac/*
 Runtimes/node_modules/*
 Runtimes/package-lock.json

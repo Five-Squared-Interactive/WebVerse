@@ -17,22 +17,44 @@ let mainWindow = null;
  * Application settings.
  */
 let applicationSettings = null;
-applicationSettings = new ApplicationSettings("./webverse.config");
+const platform = process.platform;
+let configPath = "./webverse.config";
+if (platform === 'darwin') {
+  configPath = path.join(process.resourcesPath, "webverse.config");
+}
+applicationSettings = new ApplicationSettings(configPath);
 if (applicationSettings.Initialize() == false) {
   console.log("Error reading WebVerse config.");
   app.quit();
 }
-if (applicationSettings.settings['desktop-runtime'] == null ||
-  applicationSettings.settings['desktop-runtime']['path'] == null) {
-    console.log("Error getting desktop runtime path.");
-    app.quit();
+
+/**
+ * Determine runtime path based on platform.
+ */
+let runtimePath = null;
+if (platform === 'darwin') {
+  // MacOS
+  if (applicationSettings.settings['desktop-runtime-mac'] == null ||
+    applicationSettings.settings['desktop-runtime-mac']['path'] == null) {
+      console.log("Error getting MacOS desktop runtime path.");
+      app.quit();
+  }
+  runtimePath = applicationSettings.settings['desktop-runtime-mac']['path'];
+} else {
+  // Windows (and other platforms default to Windows runtime)
+  if (applicationSettings.settings['desktop-runtime'] == null ||
+    applicationSettings.settings['desktop-runtime']['path'] == null) {
+      console.log("Error getting desktop runtime path.");
+      app.quit();
+  }
+  runtimePath = applicationSettings.settings['desktop-runtime']['path'];
 }
 
 /**
  * Runtime handler.
  */
 let runtimeHandler = null;
-runtimeHandler = new RuntimeHandler(applicationSettings.settings['desktop-runtime']['path']);
+runtimeHandler = new RuntimeHandler(runtimePath);
 
 /**
  * Disable reload shortcut.

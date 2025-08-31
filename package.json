@@ -9,13 +9,13 @@
     "Application",
     "Web Metaverse"
   ],
-  "version": "2.1.5",
+  "version": "2.1.6",
   "license": "MIT",
   "repository": {
     "url": "https://github.com/Five-Squared-Interactive/WebVerse"
   },
   "devDependencies": {
-    "electron": "^26.1.0",
+    "electron": "^37.4.0",
     "electron-builder": "^24.6.4"
   },
   "main": "main.js",
@@ -28,20 +28,6 @@
     "icon": "images/WebVerse.png",
     "productName": "WebVerse",
     "copyright": "Copyright © 2025 Five Squared Interactive",
-    "extraResources": [
-      {
-        "from": "Runtimes/Desktop/",
-        "to": "../Runtimes/Desktop/"
-      },
-      {
-        "from": "webverse.config",
-        "to": "../webverse.config"
-      },
-      {
-        "from": ".wv-settings",
-        "to": "../.wv-settings"
-      }
-    ],
     "nsis": {
       "oneClick": true,
       "allowElevation": true,
@@ -57,6 +43,39 @@
     "win": {
       "publish": [
         "github"
+      ],
+      "extraResources": [
+        {
+          "from": "Runtimes/Desktop/",
+          "to": "../Runtimes/Desktop/"
+        },
+        {
+          "from": "webverse.config",
+          "to": "../webverse.config"
+        },
+        {
+          "from": ".wv-settings",
+          "to": "../.wv-settings"
+        }
+      ]
+    },
+    "mac": {
+      "publish": [
+        "github"
+      ],
+      "extraResources": [
+        {
+          "from": "Runtimes/Desktop-Mac/",
+          "to": "../Runtimes/Desktop-Mac/"
+        },
+        {
+          "from": "webverse.config",
+          "to": "../Resources/webverse.config"
+        },
+        {
+          "from": ".wv-settings",
+          "to": "../.wv-settings"
+        }
       ]
     }
   },

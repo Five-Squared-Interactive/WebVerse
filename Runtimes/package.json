@@ -9,10 +9,10 @@
         "Runtime",
         "Web MetaVerse"
     ],
-    "version": "2.1.5",
+    "version": "2.1.6",
     "license": "MIT",
     "scripts": {
-        "start": "node runtimedownloader.js https://webverse-runtime.s3.us-east-1.amazonaws.com/builds/v2.1.5-22June2025/Desktop-v2.1.5_22June2025_83bff28.zip Desktop"
+        "start": "node runtimedownloader.js https://webverse-runtime.s3.us-east-1.amazonaws.com/builds/v2.1.6-30Aug2025/Windows-v2.1.6_30Aug2025_25a9480.zip Desktop https://webverse-runtime.s3.us-east-1.amazonaws.com/builds/v2.1.6-30Aug2025/MacOS-v2.1.6_30Aug2025_25a9480.zip Desktop-Mac"
     },
     "dependencies": {
         "node-downloader-helper": "latest",
