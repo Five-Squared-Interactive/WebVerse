@@ -30,20 +30,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Download runtimes
         working-directory: Runtimes
         run: |
-          npm ci
+          npm install
           npm run start
         timeout-minutes: 30
 
       - name: Verify runtimes downloaded
-        shell: pwsh
+        shell: powershell -ExecutionPolicy Bypass {0}
         run: |
           $desktopPath = "Runtimes/Desktop"
           if (-not (Test-Path $desktopPath)) {
@@ -55,7 +54,7 @@ jobs:
 
       - name: Build Windows Electron App
         id: build
-        shell: pwsh
+        shell: powershell -ExecutionPolicy Bypass {0}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -85,7 +84,7 @@ jobs:
 
       - name: Cleanup
         if: always()
-        shell: pwsh
+        shell: powershell -ExecutionPolicy Bypass {0}
         run: |
           Remove-Item -Path "Runtimes/Desktop" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "Runtimes/Desktop-Mac" -Recurse -Force -ErrorAction SilentlyContinue
@@ -105,15 +104,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Download runtimes
         working-directory: Runtimes
         run: |
-          npm ci
+          npm install
           npm run start
         timeout-minutes: 30
 
