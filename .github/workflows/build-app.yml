@@ -32,9 +32,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
+        shell: powershell -ExecutionPolicy Bypass {0}
         run: npm install
 
       - name: Download runtimes
+        shell: powershell -ExecutionPolicy Bypass {0}
         working-directory: Runtimes
         run: |
           npm install
@@ -124,6 +126,13 @@ jobs:
           fi
           echo "Mac Desktop runtime found at: $DESKTOP_MAC_PATH"
           ls -la "$DESKTOP_MAC_PATH" | head -10
+
+      - name: Clean macOS resource forks
+        run: |
+          # Remove __MACOSX folders and ._ files that cause codesign issues
+          find Runtimes -name "__MACOSX" -type d -exec rm -rf {} + 2>/dev/null || true
+          find Runtimes -name "._*" -type f -delete 2>/dev/null || true
+          echo "Cleaned macOS resource fork artifacts"
 
       - name: Build Mac Electron App
         id: build
