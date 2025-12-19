@@ -61,16 +61,18 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Use workspace for cache to avoid NetworkService permission issues
           ELECTRON_BUILDER_CACHE: ${{ github.workspace }}\.electron-builder-cache
-          # Skip Windows code signing
+          # Completely disable code signing
           CSC_IDENTITY_AUTO_DISCOVERY: false
+          WIN_CSC_LINK: ""
+          CSC_LINK: ""
         run: |
           Write-Host "Building Windows Electron application..."
           
           # Create cache directory
           New-Item -ItemType Directory -Path "$env:ELECTRON_BUILDER_CACHE" -Force | Out-Null
           
-          # Build but don't publish (we'll create the release ourselves)
-          npx electron-builder --win --publish never
+          # Build with signing completely disabled via config override
+          npx electron-builder --win --publish never --config.win.signAndEditExecutable=false --config.win.forceCodeSigning=false
           
           # Find the built installer
           $distPath = "dist"
