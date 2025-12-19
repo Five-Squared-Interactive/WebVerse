@@ -59,8 +59,15 @@ jobs:
         shell: powershell -ExecutionPolicy Bypass {0}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Use workspace for cache to avoid NetworkService permission issues
+          ELECTRON_BUILDER_CACHE: ${{ github.workspace }}\.electron-builder-cache
+          # Skip Windows code signing
+          CSC_IDENTITY_AUTO_DISCOVERY: false
         run: |
           Write-Host "Building Windows Electron application..."
+          
+          # Create cache directory
+          New-Item -ItemType Directory -Path "$env:ELECTRON_BUILDER_CACHE" -Force | Out-Null
           
           # Build but don't publish (we'll create the release ourselves)
           npx electron-builder --win --publish never
@@ -91,6 +98,7 @@ jobs:
           Remove-Item -Path "Runtimes/Desktop" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "Runtimes/Desktop-Mac" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "dist" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path ".electron-builder-cache" -Recurse -Force -ErrorAction SilentlyContinue
 
   # Build Mac Electron App
   build-mac:
