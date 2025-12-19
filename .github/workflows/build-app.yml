@@ -138,6 +138,8 @@ jobs:
         id: build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Disable automatic code signing - the nested runtime app causes signing issues
+          CSC_IDENTITY_AUTO_DISCOVERY: false
           # For future code signing support
           # CSC_LINK: ${{ secrets.MAC_CERTIFICATE }}
           # CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
