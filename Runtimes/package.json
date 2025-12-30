@@ -7,12 +7,12 @@
     "keywords": [
         "WebVerse",
         "Runtime",
-        "Web MetaVerse"
+        "Web Wide Worlds"
     ],
-    "version": "2.1.6",
+    "version": "2.2.0",
     "license": "MIT",
     "scripts": {
-        "start": "node runtimedownloader.js https://webverse-runtime.s3.us-east-1.amazonaws.com/builds/v2.1.6-30Aug2025/Windows-v2.1.6_30Aug2025_25a9480.zip Desktop https://webverse-runtime.s3.us-east-1.amazonaws.com/builds/v2.1.6-30Aug2025/MacOS-v2.1.6_30Aug2025_25a9480.zip Desktop-Mac"
+        "start": "node runtimedownloader.js https://webverse-runtime.s3.us-east-1.amazonaws.com/builds/v2.2.0-14Oct2025/Windows-v2.2.0_14Oct2025_695f98e.zip Desktop https://webverse-runtime.s3.us-east-1.amazonaws.com/builds/v2.2.0-14Oct2025/MacOS-v2.2.0_14Oct2025_695f98e.zip Desktop-Mac"
     },
     "dependencies": {
         "node-downloader-helper": "latest",
