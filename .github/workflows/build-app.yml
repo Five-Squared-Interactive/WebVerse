@@ -1,0 +1,272 @@
+name: Build WebVerse Application
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number for the release (e.g., 2.1.6)'
+        required: true
+        type: string
+      draft:
+        description: 'Create as draft release'
+        type: boolean
+        default: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # Build Windows Electron App
+  build-windows:
+    runs-on: [self-hosted, Windows, unity]
+    outputs:
+      artifact_name: ${{ steps.build.outputs.artifact_name }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        shell: powershell -ExecutionPolicy Bypass {0}
+        run: npm install
+
+      - name: Download runtimes
+        shell: powershell -ExecutionPolicy Bypass {0}
+        working-directory: Runtimes
+        run: |
+          npm install
+          npm run start
+        timeout-minutes: 30
+
+      - name: Verify runtimes downloaded
+        shell: powershell -ExecutionPolicy Bypass {0}
+        run: |
+          $desktopPath = "Runtimes/Desktop"
+          if (-not (Test-Path $desktopPath)) {
+            Write-Host "::error::Desktop runtime not found at: $desktopPath"
+            exit 1
+          }
+          Write-Host "Desktop runtime found at: $desktopPath"
+          Get-ChildItem $desktopPath -Recurse | Select-Object -First 10
+
+      - name: Build Windows Electron App
+        id: build
+        shell: powershell -ExecutionPolicy Bypass {0}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Use workspace for cache to avoid NetworkService permission issues
+          ELECTRON_BUILDER_CACHE: ${{ github.workspace }}\.electron-builder-cache
+          # Disable code signing
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+          # Debug signing mode skips actual signing
+          DEBUG_SIGNING: "true"
+        run: |
+          Write-Host "Building Windows Electron application..."
+          
+          # Create cache directory
+          New-Item -ItemType Directory -Path "$env:ELECTRON_BUILDER_CACHE" -Force | Out-Null
+          
+          # Build with signing disabled
+          npx electron-builder --win --publish never --config.win.signAndEditExecutable=false
+          
+          # Find the built installer
+          $distPath = "dist"
+          $installer = Get-ChildItem "$distPath/*.exe" | Select-Object -First 1
+          
+          if ($installer) {
+            Write-Host "Built installer: $($installer.Name)"
+            echo "artifact_name=$($installer.Name)" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "::error::No installer found in dist folder"
+            exit 1
+          }
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist/*.exe
+          retention-days: 7
+
+      - name: Cleanup
+        if: always()
+        shell: powershell -ExecutionPolicy Bypass {0}
+        run: |
+          Remove-Item -Path "Runtimes/Desktop" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path "Runtimes/Desktop-Mac" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path "dist" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path ".electron-builder-cache" -Recurse -Force -ErrorAction SilentlyContinue
+
+  # Build Mac Electron App
+  build-mac:
+    runs-on: [self-hosted, macOS, unity]
+    outputs:
+      artifact_name: ${{ steps.build.outputs.artifact_name }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Download runtimes
+        working-directory: Runtimes
+        run: |
+          npm install
+          npm run start
+        timeout-minutes: 30
+
+      - name: Verify runtimes downloaded
+        run: |
+          DESKTOP_MAC_PATH="Runtimes/Desktop-Mac"
+          if [ ! -d "$DESKTOP_MAC_PATH" ]; then
+            echo "::error::Mac Desktop runtime not found at: $DESKTOP_MAC_PATH"
+            exit 1
+          fi
+          echo "Mac Desktop runtime found at: $DESKTOP_MAC_PATH"
+          ls -la "$DESKTOP_MAC_PATH" | head -10
+
+      - name: Clean macOS resource forks
+        run: |
+          # Remove __MACOSX folders and ._ files that cause codesign issues
+          find Runtimes -name "__MACOSX" -type d -exec rm -rf {} + 2>/dev/null || true
+          find Runtimes -name "._*" -type f -delete 2>/dev/null || true
+          echo "Cleaned macOS resource fork artifacts"
+
+      - name: Build Mac Electron App
+        id: build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Disable automatic code signing - the nested runtime app causes signing issues
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+          # For future code signing support
+          # CSC_LINK: ${{ secrets.MAC_CERTIFICATE }}
+          # CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          echo "Building Mac Electron application..."
+          
+          # Build but don't publish (we'll create the release ourselves)
+          npx electron-builder --mac --publish never
+          
+          # Find the built installer
+          INSTALLER=$(find dist -name "*.dmg" -type f | head -1)
+          
+          if [ -n "$INSTALLER" ]; then
+            FILENAME=$(basename "$INSTALLER")
+            echo "Built installer: $FILENAME"
+            echo "artifact_name=$FILENAME" >> $GITHUB_OUTPUT
+          else
+            # Try zip if dmg not found
+            INSTALLER=$(find dist -name "*.zip" -type f | head -1)
+            if [ -n "$INSTALLER" ]; then
+              FILENAME=$(basename "$INSTALLER")
+              echo "Built archive: $FILENAME"
+              echo "artifact_name=$FILENAME" >> $GITHUB_OUTPUT
+            else
+              echo "::error::No installer found in dist folder"
+              exit 1
+            fi
+          fi
+
+      - name: Upload Mac artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-installer
+          path: |
+            dist/*.dmg
+            dist/*.zip
+          retention-days: 7
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -rf "Runtimes/Desktop" || true
+          rm -rf "Runtimes/Desktop-Mac" || true
+          rm -rf "dist" || true
+
+  # Create GitHub Release
+  create-release:
+    needs: [build-windows, build-mac]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: release-assets/
+
+      - name: Download Mac artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-installer
+          path: release-assets/
+
+      - name: List release assets
+        run: |
+          echo "Release assets:"
+          ls -la release-assets/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: WebVerse v${{ github.event.inputs.version }}
+          draft: ${{ github.event.inputs.draft }}
+          prerelease: false
+          generate_release_notes: true
+          files: release-assets/*
+          body: |
+            ## WebVerse v${{ github.event.inputs.version }}
+            
+            ### Downloads
+            
+            - **Windows**: Download the `.exe` installer
+            - **Mac**: Download the `.dmg` installer
+            
+            ### Installation
+            
+            **Windows:**
+            1. Download the installer
+            2. Run the installer and follow the on-screen instructions
+            
+            **Mac:**
+            1. Download the DMG file
+            2. Open the DMG and drag WebVerse to your Applications folder
+            3. If you see a security warning, go to System Preferences > Security & Privacy and click "Open Anyway"
+            
+            ### What's New
+            
+            See the automatically generated release notes below for changes in this version.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release Summary
+        run: |
+          echo "## Release Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** v${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Draft:** ${{ github.event.inputs.draft }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Assets" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ls -1 release-assets/ >> $GITHUB_STEP_SUMMARY
