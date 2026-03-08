@@ -9,7 +9,7 @@
     "Application",
     "Web Wide Worlds"
   ],
-  "version": "2.2.0",
+  "version": "2.2.1",
   "license": "MIT",
   "repository": {
     "url": "https://github.com/Five-Squared-Interactive/WebVerse"
@@ -27,7 +27,7 @@
     "appId": "com.fivesqd.webverse",
     "icon": "images/WebVerse.png",
     "productName": "WebVerse",
-    "copyright": "Copyright © 2025 Five Squared Interactive",
+    "copyright": "Copyright © 2026 Five Squared Interactive",
     "nsis": {
       "oneClick": true,
       "allowElevation": true,
