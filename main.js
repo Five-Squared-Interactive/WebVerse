@@ -40,6 +40,10 @@ if (platform === 'darwin') {
       app.quit();
   }
   runtimePath = applicationSettings.settings['desktop-runtime-mac']['path'];
+  console.log("runtimePath:", runtimePath);
+  console.log("resourcesPath:", process.resourcesPath);
+  console.log("cwd:", process.cwd());
+  console.log("resolved:", path.resolve(runtimePath));
 } else {
   // Windows (and other platforms default to Windows runtime)
   if (applicationSettings.settings['desktop-runtime'] == null ||
