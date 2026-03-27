@@ -39,7 +39,10 @@ if (platform === 'darwin') {
       console.log("Error getting MacOS desktop runtime path.");
       app.quit();
   }
-  runtimePath = applicationSettings.settings['desktop-runtime-mac']['path'];
+  runtimePath = path.join(
+    path.dirname(process.resourcesPath),
+    applicationSettings.settings['desktop-runtime-mac']['path']
+  );
   console.log("runtimePath:", runtimePath);
   console.log("resourcesPath:", process.resourcesPath);
   console.log("cwd:", process.cwd());
