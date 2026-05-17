@@ -1,5 +1,5 @@
 name: Build WebVerse Application
-
+ 
 on:
   workflow_dispatch:
     inputs:
@@ -11,10 +11,10 @@ on:
         description: 'Create as draft release'
         type: boolean
         default: true
-
+ 
 env:
   NODE_VERSION: '20'
-
+ 
 jobs:
   # Build Windows Electron App
   build-windows:
@@ -25,16 +25,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+ 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
+ 
       - name: Install dependencies
         shell: powershell -ExecutionPolicy Bypass {0}
         run: npm install
-
+ 
       - name: Download runtimes
         shell: powershell -ExecutionPolicy Bypass {0}
         working-directory: Runtimes
@@ -42,7 +42,7 @@ jobs:
           npm install
           npm run start
         timeout-minutes: 30
-
+ 
       - name: Verify runtimes downloaded
         shell: powershell -ExecutionPolicy Bypass {0}
         run: |
@@ -53,7 +53,7 @@ jobs:
           }
           Write-Host "Desktop runtime found at: $desktopPath"
           Get-ChildItem $desktopPath -Recurse | Select-Object -First 10
-
+ 
       - name: Build Windows Electron App
         id: build
         shell: powershell -ExecutionPolicy Bypass {0}
@@ -61,9 +61,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Use workspace for cache to avoid NetworkService permission issues
           ELECTRON_BUILDER_CACHE: ${{ github.workspace }}\.electron-builder-cache
-          # Disable code signing
+          # Disable code signing - revisit when a Windows code signing cert is acquired
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
-          # Debug signing mode skips actual signing
           DEBUG_SIGNING: "true"
         run: |
           Write-Host "Building Windows Electron application..."
@@ -85,14 +84,14 @@ jobs:
             Write-Host "::error::No installer found in dist folder"
             exit 1
           }
-
+ 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
           path: dist/*.exe
           retention-days: 7
-
+ 
       - name: Cleanup
         if: always()
         shell: powershell -ExecutionPolicy Bypass {0}
@@ -101,7 +100,7 @@ jobs:
           Remove-Item -Path "Runtimes/Desktop-Mac" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -Path "dist" -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item -Path ".electron-builder-cache" -Recurse -Force -ErrorAction SilentlyContinue
-
+ 
   # Build Mac Electron App
   build-mac:
     runs-on: [self-hosted, macOS, unity]
@@ -111,22 +110,25 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+ 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
+ 
       - name: Install dependencies
-        run: npm install
-
+        run: |
+          npm install
+          # Install the notarize tool used by the afterSign hook
+          npm install --save-dev @electron/notarize
+ 
       - name: Download runtimes
         working-directory: Runtimes
         run: |
           npm install
           npm run start
         timeout-minutes: 30
-
+ 
       - name: Verify runtimes downloaded
         run: |
           DESKTOP_MAC_PATH="Runtimes/Desktop-Mac"
@@ -136,26 +138,60 @@ jobs:
           fi
           echo "Mac Desktop runtime found at: $DESKTOP_MAC_PATH"
           ls -la "$DESKTOP_MAC_PATH" | head -10
-
+ 
       - name: Clean macOS resource forks
         run: |
           # Remove __MACOSX folders and ._ files that cause codesign issues
           find Runtimes -name "__MACOSX" -type d -exec rm -rf {} + 2>/dev/null || true
           find Runtimes -name "._*" -type f -delete 2>/dev/null || true
           echo "Cleaned macOS resource fork artifacts"
-
+ 
+      - name: Install Mac Developer ID Certificate
+        id: install-mac-cert
+        env:
+          MAC_CERTIFICATE_BASE64: ${{ secrets.MAC_CERTIFICATE_BASE64 }}
+          MAC_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+        run: |
+          if [ -z "$MAC_CERTIFICATE_BASE64" ]; then
+            echo "No Mac certificate provided, builds will be unsigned"
+            echo "MAC_SIGNING_AVAILABLE=false" >> $GITHUB_ENV
+            exit 0
+          fi
+ 
+          KEYCHAIN_PATH="$RUNNER_TEMP/launcher-signing.keychain-db"
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+ 
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+ 
+          CERT_PATH="$RUNNER_TEMP/launcher-cert.p12"
+          echo "$MAC_CERTIFICATE_BASE64" | base64 --decode > "$CERT_PATH"
+          security import "$CERT_PATH" -P "$MAC_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+ 
+          # Add the temp keychain to the search list so codesign can find the identity
+          security list-keychain -d user -s "$KEYCHAIN_PATH" $(security list-keychain -d user | tr -d '"' | xargs)
+ 
+          # Verify the identity is available
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+ 
+          echo "LAUNCHER_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+          echo "MAC_SIGNING_AVAILABLE=true" >> $GITHUB_ENV
+          echo "Certificate installed"
+ 
       - name: Build Mac Electron App
         id: build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Disable automatic code signing - the nested runtime app causes signing issues
-          CSC_IDENTITY_AUTO_DISCOVERY: false
-          # For future code signing support
-          # CSC_LINK: ${{ secrets.MAC_CERTIFICATE }}
-          # CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
-          # APPLE_ID: ${{ secrets.APPLE_ID }}
-          # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # Code signing - electron-builder reads these automatically
+          CSC_LINK: ${{ secrets.MAC_CERTIFICATE_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+          CSC_KEYCHAIN: ${{ env.LAUNCHER_KEYCHAIN_PATH }}
+          # Notarization - read by build/notarize.js (the afterSign hook)
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           echo "Building Mac Electron application..."
           
@@ -181,7 +217,24 @@ jobs:
               exit 1
             fi
           fi
-
+ 
+      - name: Verify notarization
+        if: env.MAC_SIGNING_AVAILABLE == 'true'
+        run: |
+          # The DMG itself doesn't get stapled, but the .app inside does.
+          # Mount the DMG and verify the app's notarization is valid.
+          DMG=$(find dist -name "*.dmg" -type f | head -1)
+          if [ -n "$DMG" ]; then
+            MOUNT_POINT=$(hdiutil attach "$DMG" -nobrowse | grep "/Volumes/" | awk '{print $NF}')
+            APP_IN_DMG=$(find "$MOUNT_POINT" -maxdepth 1 -name "*.app" -type d | head -1)
+            if [ -n "$APP_IN_DMG" ]; then
+              echo "Verifying notarization for: $APP_IN_DMG"
+              spctl --assess --type execute --verbose "$APP_IN_DMG" || echo "::warning::spctl assessment failed"
+              xcrun stapler validate "$APP_IN_DMG" || echo "::warning::stapler validation failed"
+            fi
+            hdiutil detach "$MOUNT_POINT" -quiet || true
+          fi
+ 
       - name: Upload Mac artifact
         uses: actions/upload-artifact@v4
         with:
@@ -190,14 +243,22 @@ jobs:
             dist/*.dmg
             dist/*.zip
           retention-days: 7
-
+ 
+      - name: Cleanup Mac Keychain
+        if: always()
+        run: |
+          if [ -n "$LAUNCHER_KEYCHAIN_PATH" ] && [ -f "$LAUNCHER_KEYCHAIN_PATH" ]; then
+            security delete-keychain "$LAUNCHER_KEYCHAIN_PATH" 2>/dev/null || true
+          fi
+          rm -f "$RUNNER_TEMP/launcher-cert.p12" 2>/dev/null || true
+ 
       - name: Cleanup
         if: always()
         run: |
           rm -rf "Runtimes/Desktop" || true
           rm -rf "Runtimes/Desktop-Mac" || true
           rm -rf "dist" || true
-
+ 
   # Create GitHub Release
   create-release:
     needs: [build-windows, build-mac]
@@ -208,24 +269,24 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+ 
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
           name: windows-installer
           path: release-assets/
-
+ 
       - name: Download Mac artifact
         uses: actions/download-artifact@v4
         with:
           name: mac-installer
           path: release-assets/
-
+ 
       - name: List release assets
         run: |
           echo "Release assets:"
           ls -la release-assets/
-
+ 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -248,18 +309,19 @@ jobs:
             **Windows:**
             1. Download the installer
             2. Run the installer and follow the on-screen instructions
+            3. If you see a "Windows protected your PC" warning, click **More info** then **Run anyway** — the application is not yet code-signed
             
             **Mac:**
             1. Download the DMG file
             2. Open the DMG and drag WebVerse to your Applications folder
-            3. If you see a security warning, go to System Preferences > Security & Privacy and click "Open Anyway"
+            3. Launch WebVerse from Applications
             
             ### What's New
             
             See the automatically generated release notes below for changes in this version.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+ 
       - name: Release Summary
         run: |
           echo "## Release Created" >> $GITHUB_STEP_SUMMARY
