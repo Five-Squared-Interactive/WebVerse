@@ -146,49 +146,27 @@ jobs:
           find Runtimes -name "._*" -type f -delete 2>/dev/null || true
           echo "Cleaned macOS resource fork artifacts"
  
-      - name: Install Mac Developer ID Certificate
-        id: install-mac-cert
-        env:
-          MAC_CERTIFICATE_BASE64: ${{ secrets.MAC_CERTIFICATE_BASE64 }}
-          MAC_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+      - name: Verify signing identity is available
         run: |
-          if [ -z "$MAC_CERTIFICATE_BASE64" ]; then
-            echo "No Mac certificate provided, builds will be unsigned"
+          # The self-hosted runner is Dylan's Mac, which has the Developer ID cert
+          # already in the login keychain. Verify it's findable before building.
+          if security find-identity -v -p codesigning | grep -q "Developer ID Application"; then
+            echo "Developer ID Application identity is available:"
+            security find-identity -v -p codesigning | grep "Developer ID Application"
+            echo "MAC_SIGNING_AVAILABLE=true" >> $GITHUB_ENV
+          else
+            echo "::warning::No Developer ID Application identity in login keychain - build will be unsigned"
             echo "MAC_SIGNING_AVAILABLE=false" >> $GITHUB_ENV
-            exit 0
           fi
- 
-          KEYCHAIN_PATH="$RUNNER_TEMP/launcher-signing.keychain-db"
-          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
- 
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
- 
-          CERT_PATH="$RUNNER_TEMP/launcher-cert.p12"
-          echo "$MAC_CERTIFICATE_BASE64" | base64 --decode > "$CERT_PATH"
-          security import "$CERT_PATH" -P "$MAC_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
-          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
- 
-          # Add the temp keychain to the search list so codesign can find the identity
-          security list-keychain -d user -s "$KEYCHAIN_PATH" $(security list-keychain -d user | tr -d '"' | xargs)
- 
-          # Verify the identity is available
-          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
- 
-          echo "LAUNCHER_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
-          echo "MAC_SIGNING_AVAILABLE=true" >> $GITHUB_ENV
-          echo "Certificate installed"
  
       - name: Build Mac Electron App
         id: build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Code signing - electron-builder reads these automatically
-          CSC_LINK: ${{ secrets.MAC_CERTIFICATE_BASE64 }}
-          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
-          CSC_KEYCHAIN: ${{ env.LAUNCHER_KEYCHAIN_PATH }}
-          # Notarization - read by build/notarize.js (the afterSign hook)
+          # Use the Developer ID cert already in the login keychain - no temp keychain needed
+          CSC_IDENTITY_AUTO_DISCOVERY: "true"
+          CSC_NAME: "Developer ID Application: Dylan Baker"
+          # Notarization credentials - read by build/notarize.js (the afterSign hook)
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -243,14 +221,6 @@ jobs:
             dist/*.dmg
             dist/*.zip
           retention-days: 7
- 
-      - name: Cleanup Mac Keychain
-        if: always()
-        run: |
-          if [ -n "$LAUNCHER_KEYCHAIN_PATH" ] && [ -f "$LAUNCHER_KEYCHAIN_PATH" ]; then
-            security delete-keychain "$LAUNCHER_KEYCHAIN_PATH" 2>/dev/null || true
-          fi
-          rm -f "$RUNNER_TEMP/launcher-cert.p12" 2>/dev/null || true
  
       - name: Cleanup
         if: always()
