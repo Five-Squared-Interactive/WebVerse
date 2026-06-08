@@ -165,7 +165,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Use the Developer ID cert already in the login keychain - no temp keychain needed
           CSC_IDENTITY_AUTO_DISCOVERY: "true"
-          CSC_NAME: "Developer ID Application: Dylan Baker"
+          CSC_NAME: ${{ secrets.MAC_SIGNING_NAME }}
           # Notarization credentials - read by build/notarize.js (the afterSign hook)
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
