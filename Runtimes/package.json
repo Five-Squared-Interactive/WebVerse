@@ -16,6 +16,6 @@
     },
     "dependencies": {
         "node-downloader-helper": "latest",
-        "decompress": "latest"
+        "adm-zip": "latest"
     }
 }
