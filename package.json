@@ -84,6 +84,7 @@
         }
       ]
     },
+    "afterPack": "build/notarize.js",
     "afterSign": "build/notarize.js"
   },
   "dependencies": {
